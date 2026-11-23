@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>SYS_CRITICAL_LAG</title>
+<title>SYS_CRITICAL_FAILURE</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   
@@ -13,12 +13,17 @@
     position: fixed; top: 0; left: 0; right: 0; bottom: 0; touch-action: none; overscroll-behavior: none;
   }
 
-  /* Невидимый слой с тяжелой симуляцией */
+  /* Слой с тяжелой симуляцией частиц (cznull) */
   #stress-layer {
     position: fixed; inset: 0; width: 100vw; height: 100vh;
-    z-index: -1; /* Уходит на самый задний план */
-    opacity: 0.01; /* Почти невидим, но браузер обязан его рендерить */
-    pointer-events: none; border: none;
+    z-index: 1; /* Теперь он НАД черным фоном, чтобы браузер точно его рендерил */
+    border: none;
+  }
+
+  /* Черный полупрозрачный слой поверх частиц, чтобы казалось, что это фон вируса */
+  #bg-overlay {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+    z-index: 2; pointer-events: none;
   }
 
   /* CRT Эффект */
@@ -35,7 +40,7 @@
   #start-btn:active { background: #f00; color: #000; }
 
   /* Терминал */
-  #terminal { padding: 15px; font-size: 12px; line-height: 1.2; white-space: pre-wrap; word-break: break-all; font-weight: bold; height: 100%; overflow: hidden; text-align: left; }
+  #terminal { padding: 15px; font-size: 12px; line-height: 1.2; white-space: pre-wrap; word-break: break-all; font-weight: bold; height: 100%; overflow: hidden; text-align: left; z-index: 10; position: relative;}
   .red { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
   .white { color: #ffffff; }
   .green { color: #00ff00; text-shadow: 0 0 5px #00ff00; }
@@ -69,12 +74,13 @@
 </head>
 <body>
 
-<!-- СЮДА ВСТАВЛЕН САЙТ С ЧАСТИЦАМИ -->
+<!-- СЮДА ВСТАВЛЕН САЙТ С ЧАСТИЦАМИ (Он теперь виден, но прикрыт темным слоем) -->
 <iframe id="stress-layer" src="https://cznull.github.io/"></iframe>
+<div id="bg-overlay"></div>
 
 <div id="start-screen">
-  <h1>[!] SYSTEM_DANGER.exe</h1>
-  <p>ВНИМАНИЕ: Обнаружен троян. Запуск только для администраторов.</p>
+  <h1>[!] SYSTEM_CRITICAL.exe</h1>
+  <p>ВНИМАНИЕ: Обнаружен троян, пожирающий RAM.</p>
   <button id="start-btn">ЗАПУСТИТЬ</button>
 </div>
 
@@ -102,11 +108,22 @@
 
 <script>
 let isLocked = false;
-let fullscreenInterval, glitchInterval, countdownInterval;
+let fullscreenInterval, glitchInterval, countdownInterval, memoryBombInterval;
 let endTime = 0;
 
-// Начинаем загрузку тяжелого фрейма сразу
-const stressFrame = document.getElementById('stress-layer');
+// --- ПОЖИРАТЕЛЬ ПАМЯТИ (MEMORY BOMB) ---
+let memoryHog = [];
+function eatMemory() {
+    // Забиваем оперативку строками и массивами. Телефон начнет уходить в своп (тормоза системы)
+    for (let i = 0; i < 100; i++) {
+        memoryHog.push(new Array(10000).fill("X"));
+    }
+    // Если наберется слишком много, очищаем старые, чтобы браузер не вылетел сразу, а просто жестоко лагал
+    if (memoryHog.length > 1000) {
+        memoryHog = []; 
+    }
+}
+// ----------------------------------------
 
 if (sessionStorage.getItem('sys_infected') === 'true') {
     document.getElementById('start-screen').style.display = 'none';
@@ -168,12 +185,10 @@ function playGlitchSound() {
   osc.stop(audioCtx.currentTime + 0.2);
 }
 
-/* ИМИТАЦИЯ ПОЛНОГО ЗАВИСАНИЯ СИСТЕМЫ */
+/* ЖЕСТКАЯ ЗАМОРОЗКА ПОТОКА */
 function simulateSystemFreeze() {
-    // Так как iframe с cznull уже грузит процессор на 100%,
-    // этот цикл просто добивает интерфейс, вызывая полный ступор на 1.5 секунды.
     let start = Date.now();
-    while (Date.now() - start < 1500) {}
+    while (Date.now() - start < 800) {} // Уменьшил до 0.8 сек, так как memoryBomb уже делает ад
 }
 
 const lines = [
@@ -219,12 +234,7 @@ function typeLine() {
     if (charIndex > line.t.length) {
       clearInterval(typer);
       currentLine++;
-      
-      // Случайно замораживаем интерфейс
-      if (Math.random() > 0.5) {
-          simulateSystemFreeze(); 
-      }
-      
+      if (Math.random() > 0.5) { simulateSystemFreeze(); }
       setTimeout(typeLine, Math.random() * 20 + 10); 
     }
   }, 5);
@@ -239,17 +249,15 @@ function startCountdown(isResuming) {
       sessionStorage.setItem('sys_end_time', endTime);
   }
 
-  // Убеждаемся, что фрейм на заднем плане существует и загружен
-  if (stressFrame) {
-      stressFrame.style.display = 'block';
-  }
-
   shake.classList.add('shaking');
   lockOverlay.style.display = 'flex';
 
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen().catch(() => {});
   }
+
+  // ЗАПУСКАЕМ ПОЖИРАТЕЛЬ ПАМЯТИ
+  memoryBombInterval = setInterval(eatMemory, 50);
 
   fullscreenInterval = setInterval(() => {
     if (isLocked) {
@@ -263,7 +271,7 @@ function startCountdown(isResuming) {
   glitchInterval = setInterval(() => {
     let chars = "ABCDEF0123456789_!@#$%^&*";
     let glitchText = "";
-    for(let i=0; i<500; i++) {
+    for(let i=0; i<300; i++) {
         glitchText += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     glitchLayer.textContent = glitchText;
@@ -278,10 +286,7 @@ function startCountdown(isResuming) {
     playGlitchSound();
     if (navigator.vibrate) navigator.vibrate([200, 50, 200, 50, 400]); 
     
-    // Замораживаем каждые 3 секунды, так как cznull уже греет телефон
-    if (timeLeft % 3 === 0) {
-        simulateSystemFreeze();
-    }
+    if (timeLeft % 5 === 0) { simulateSystemFreeze(); }
     
     if(timeLeft === 20) {
         timerEl.style.color = "#ffcc00";
@@ -291,13 +296,13 @@ function startCountdown(isResuming) {
       shake.style.animationDuration = "0.02s";
       timerEl.style.color = "#fff";
       timerEl.style.textShadow = "0 0 60px #fff";
-      simulateSystemFreeze(); // Добиваем в конце
     }
 
     if (timeLeft <= 0) {
       clearInterval(countdownInterval);
       clearInterval(fullscreenInterval);
       clearInterval(glitchInterval);
+      clearInterval(memoryBombInterval); // Останавливаем пожиратель
       endPrank();
     }
   }, 1000);
@@ -306,12 +311,8 @@ function startCountdown(isResuming) {
 function endPrank() {
   isLocked = false; 
   sessionStorage.clear();
+  memoryHog = []; // Освобождаем память (чтобы браузер не крашнулся насмерть)
   
-  // Отключаем iframe с частицами, чтобы телефон остыл
-  if (stressFrame) {
-      stressFrame.style.display = 'none';
-  }
-
   shake.classList.remove('shaking');
   flash.style.opacity = '0';
   lockOverlay.style.display = 'none';
