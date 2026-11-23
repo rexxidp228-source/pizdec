@@ -2,126 +2,278 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>СИСТЕМА</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>System_Failure</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    background:#000; color:#0f0; overflow:hidden;
-    font-family: 'Courier New', monospace; height:100vh;
+  * { margin:0; padding:0; box-sizing:border-box; user-select: none; -webkit-user-select: none; }
+  html, body { 
+    background:#000; overflow:hidden; font-family: 'Courier New', monospace; 
+    height: 100dvh; width: 100vw; color:#0f0; position: fixed; touch-action: none;
   }
-  #terminal {
-    padding:20px; font-size:15px; line-height:1.5;
-    white-space:pre-wrap; word-break:break-all;
+  
+  /* Стартовый экран */
+  #start-screen {
+    position:fixed; inset:0; background:#000; z-index:9999;
+    display:flex; justify-content:center; align-items:center; flex-direction:column;
+    color:#f00; text-align:center; padding:20px;
   }
-  .red { color:#f00; }
+  #start-btn {
+    padding:15px 40px; font-size:18px; background:#111; color:#f00; 
+    border:2px solid #f00; cursor:pointer; font-weight:bold;
+    margin-top:20px; font-family: 'Courier New', monospace;
+    text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 10px #f00;
+  }
+  #start-btn:active { background:#f00; color:#000; }
+
+  /* Терминал */
+  #terminal { 
+    padding:15px; font-size:13px; line-height: 1.3; 
+    white-space:pre-wrap; word-break:break-all; font-weight:bold;
+    height: 100%; overflow-y: hidden;
+  }
+  .red { color:#f00; text-shadow: 0 0 8px #f00; }
   .white { color:#fff; }
-  #flash {
-    position:fixed; inset:0; background:#f00; opacity:0;
-    pointer-events:none; z-index:99;
-  }
-  #shake { position:fixed; inset:0; }
+  .green { color:#0f0; text-shadow: 0 0 5px #0f0; }
+  .gray { color:#555; }
+  
+  /* Эффекты */
+  #flash { position:fixed; inset:0; background:#f00; opacity:0; pointer-events:none; z-index:99; mix-blend-mode:difference; }
+  #shake { position:fixed; inset:0; z-index: 10;}
   @keyframes shake {
-    0%{transform:translate(0,0)} 20%{transform:translate(-8px,4px)}
-    40%{transform:translate(6px,-6px)} 60%{transform:translate(-4px,-3px)}
-    80%{transform:translate(5px,5px)} 100%{transform:translate(0,0)}
+    0%{transform:translate(0,0)} 10%{transform:translate(-8px,4px) rotate(-1deg)}
+    20%{transform:translate(8px,-4px) rotate(1deg)} 30%{transform:translate(-6px,-6px)}
+    40%{transform:translate(6px,6px)} 50%{transform:translate(-8px,2px)}
+    60%{transform:translate(8px,-2px)} 70%{transform:translate(-2px,8px)}
+    80%{transform:translate(2px,-8px)} 90%{transform:translate(-4px,0)}
+    100%{transform:translate(0,0)}
   }
-  .shaking { animation: shake .18s infinite; }
+  .shaking { animation: shake .08s infinite; }
+  
+  /* Оверлей блокировки */
+  #lock-overlay {
+    position: fixed; inset: 0; z-index: 900;
+    background: rgba(20, 0, 0, 0.7);
+    display: none; justify-content: center; align-items: center;
+    flex-direction: column; pointer-events: all;
+  }
+  #timer {
+    font-size: 100px; color: #f00; font-weight: bold;
+    text-shadow: 0 0 40px #f00; font-family: 'Courier New', monospace;
+  }
+  #timer-text {
+    color: #fff; font-size: 16px; letter-spacing: 3px; margin-bottom: 20px;
+  }
+
+  /* Финальный экран - Смерть системы */
   #final {
-    position:fixed; inset:0; display:none; z-index:100;
-    background:#000; color:#fff; text-align:center;
-    flex-direction:column; align-items:center; justify-content:center;
-    padding:30px; font-family:sans-serif;
+    position:fixed; inset:0; display:none; z-index:1000;
+    background:#000; color:#fff; text-align:left;
+    padding:20px; font-family:'Courier New', monospace; font-size: 14px;
+    flex-direction: column; justify-content: flex-start;
   }
-  #final h1 { font-size:2.2em; color:#ffcc00; margin-bottom:16px; }
-  #final p { font-size:1.1em; color:#ccc; max-width:600px; line-height:1.6; }
-  #final .emoji { font-size:4em; margin-bottom:10px; }
-  .blink { animation: blink 1s step-start infinite; }
-  @keyframes blink { 50% { opacity:0; } }
+  .blue-screen {
+    background: #0000AA;
+    color: #fff;
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .blue-screen h2 { background: #AAAAAA; color: #0000AA; padding: 2px 10px; display: inline-block; font-size: 16px; margin-bottom: 20px; text-align: center; align-self: center; }
+  .blue-screen p { margin-bottom: 15px; line-height: 1.4; text-align: center; }
 </style>
 </head>
 <body>
+
+<div id="start-screen">
+  <h1 style="font-size:1.2em; margin-bottom:10px;">CRITICAL_UPDATE.sys</h1>
+  <p style="color:#666; font-size: 0.8em;">Разрешить установку обновления?</p>
+  <button id="start-btn">УСТАНОВИТЬ</button>
+</div>
+
 <div id="shake">
   <div id="terminal"></div>
 </div>
 <div id="flash"></div>
+
+<div id="lock-overlay">
+  <div id="timer-text">УНИЧТОЖЕНИЕ СЕКТОРОВ:</div>
+  <div id="timer">10</div>
+</div>
+
 <div id="final">
-  <div class="emoji">😅</div>
-  <h1>ШУТКА!</h1>
-  <p>Никакого взлома нет. Это просто страница-розыгрыш.<br>
-  Расслабься, всё в порядке. Выдохни 😌</p>
+  <div class="blue-screen">
+    <h2>FATAL SYSTEM ERROR</h2>
+    <p>Произошла критическая ошибка.</p>
+    <p>Ядро системы повреждено. Все данные зашифрованы.</p>
+    <p>Код ошибки: 0x000000DEAD</p>
+    <p style="margin-top: 30px; color: #aaa;">Для восстановления обратитесь в сервисный центр.</p>
+  </div>
 </div>
 
 <script>
-const lines = [
-  {t:"root@system:~# access --force --override", c:"white"},
-  {t:"[OK] подключение к ядру...", c:"green"},
-  {t:"[OK] обход защиты...", c:"green"},
-  {t:"ВНИМАНИЕ: несанкционированный доступ", c:"red"},
-  {t:"root@system:~# wipe --all --confirm", c:"white"},
-  {t:"УДАЛЕНИЕ СЕКТОРА 0x00A1...", c:"red"},
-  {t:"УДАЛЕНИЕ СЕКТОРА 0x00A2...", c:"red"},
-  {t:"УДАЛЕНИЕ СЕКТОРА 0x00A3...", c:"red"},
-  {t:"КРИТИЧЕСКАЯ ОШИБКА", c:"red"},
-  {t:"СИСТЕМА СКОМПРОМЕТИРОВАНА", c:"red"},
-  {t:"АХАЗАЗА. ТЕБЕ КОНЕЦ.", c:"red"},
-];
+// Блокировка закрытия вкладки
+let isLocked = false;
+window.addEventListener('beforeunload', function (e) {
+  if (isLocked) {
+    e.preventDefault();
+    e.returnValue = 'Идет процесс удаления. Не закрывайте страницу.';
+    return e.returnValue;
+  }
+});
 
-const term = document.getElementById('terminal');
+// Блокировка контекстного меню и зума
+document.addEventListener('contextmenu', event => event.preventDefault());
+document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
+// Ловушка для кнопки "Назад" (мобильный браузер)
+history.pushState(null, null, location.href);
+window.onpopstate = function () {
+    if (isLocked) {
+        history.go(1); // Возвращает пользователя обратно
+    }
+};
+
+const terminal = document.getElementById('terminal');
 const flash = document.getElementById('flash');
 const shake = document.getElementById('shake');
+const startScreen = document.getElementById('start-screen');
+const startBtn = document.getElementById('start-btn');
+const lockOverlay = document.getElementById('lock-overlay');
+const timerEl = document.getElementById('timer');
 const final = document.getElementById('final');
 
-let i = 0;
+let audioCtx;
+
+// Звук (жесткий писк)
+function playGlitchSound() {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(Math.random() * 800 + 400, audioCtx.currentTime); 
+  osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.1);
+  gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+  osc.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.1);
+}
+
+const lines = [
+  {t: "root@android:/ # ./exploit", c: "gray"},
+  {t: "#include <sys/mman.h>", c: "gray"},
+  {t: "#include <unistd.h>", c: "gray"},
+  {t: "void payload() {", c: "white"},
+  {t: "  mprotect(0x7F0000, 0x1000, PROT_EXEC);", c: "white"},
+  {t: "  __asm__(\"syscall\");", c: "white"},
+  {t: "}", c: "white"},
+  {t: "\n[ OK ] Accessing /system/bin/sh", c: "green"},
+  {t: "[ OK ] Root privileges granted", c: "green"},
+  {t: "[ WARN ] Bypassing SELinux...", c: "red"},
+  {t: "[ ! ] IMEI retrieved: 35*************", c: "red"},
+  {t: "[ ! ] Uploading /data/local/tmp to C2...", c: "red"},
+  {t: "\n# rm -rf /system/", c: "white"},
+  {t: "[ ERR ] Memory corruption at 0x0000DEAD", c: "red"},
+  {t: "[ ERR ] Kernel panic", c: "red"},
+  {t: "\nАХАЗАЗА...", c: "red"},
+  {t: "ПИЗДА ТЕБЕ.", c: "red"},
+  {t: "СМЕРТЬ_СИСТЕМЫ.EXE ЗАПУЩЕН", c: "red"},
+  {t: "ОСТАЛОСЬ СЕКУНД: 10", c: "red"}
+];
+
+let currentLine = 0;
 
 function typeLine() {
-  if (i >= lines.length) {
-    // финальная вспышка и тряска
-    shake.classList.add('shaking');
-    let count = 0;
-    const flasher = setInterval(() => {
-      flash.style.opacity = flash.style.opacity === '1' ? '0' : '1';
-      count++;
-      if (count > 8) {
-        clearInterval(flasher);
-        flash.style.opacity = '0';
-        reveal();
-      }
-    }, 90);
+  if (currentLine >= lines.length) {
+    startCountdown();
     return;
   }
 
-  const line = lines[i];
+  const line = lines[currentLine];
   const div = document.createElement('div');
   div.className = line.c;
-  term.appendChild(div);
+  terminal.appendChild(div);
 
-  // эффект печати
-  let j = 0;
+  let charIndex = 0;
   const typer = setInterval(() => {
-    div.textContent += line.t[j] || '';
-    j++;
-    if (j > line.t.length) {
-      clearInterval(typer);
-      i++;
-      setTimeout(typeLine, 120 + Math.random() * 200);
+    div.textContent += line.t[charIndex] || '';
+    charIndex++;
+    
+    // Вибрация для мобильных устройств (если поддерживается)
+    if (charIndex % 10 === 0 && line.c === 'red') {
+        playGlitchSound();
+        if (navigator.vibrate) navigator.vibrate(50); 
     }
-  }, 12);
+    
+    if (charIndex > line.t.length) {
+      clearInterval(typer);
+      currentLine++;
+      setTimeout(typeLine, Math.random() * 40 + 10); 
+    }
+  }, 5);
+}
 
-  // случайные вспышки по ходу
-  if (line.c === 'red' && Math.random() > 0.5) {
-    flash.style.opacity = '0.3';
-    setTimeout(() => flash.style.opacity = '0', 60);
+function startCountdown() {
+  isLocked = true; 
+  shake.classList.add('shaking');
+  lockOverlay.style.display = 'flex';
+  
+  // Пытаемся включить полный экран (на мобильных работает только после клика)
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+
+  let timeLeft = 10;
+  
+  const countdownInterval = setInterval(() => {
+    timeLeft--;
+    timerEl.textContent = timeLeft;
+    
+    flash.style.opacity = flash.style.opacity === '0.8' ? '0' : '0.8';
+    playGlitchSound();
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
+    
+    if(timeLeft < 5) {
+      shake.style.animationDuration = "0.04s";
+    }
+
+    if (timeLeft <= 0) {
+      clearInterval(countdownInterval);
+      endPrank();
+    }
+  }, 1000);
+}
+
+function endPrank() {
+  // Снимаем блокировку (чтобы можно было закрыть вкладку)
+  isLocked = false; 
+  shake.classList.remove('shaking');
+  flash.style.opacity = '0';
+  lockOverlay.style.display = 'none';
+  terminal.style.display = 'none';
+  
+  // Показываем синий экран смерти
+  final.style.display = 'flex';
+  
+  if (document.exitFullscreen && document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
   }
 }
 
-function reveal() {
-  shake.classList.remove('shaking');
-  term.style.display = 'none';
-  final.style.display = 'flex';
-}
+startBtn.addEventListener('click', () => {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  startScreen.style.display = 'none';
+  
+  // Полный экран
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
 
-setTimeout(typeLine, 600);
+  setTimeout(typeLine, 100);
+});
 </script>
 </body>
 </html>
