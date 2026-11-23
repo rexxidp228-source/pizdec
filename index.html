@@ -2,94 +2,94 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>System_Failure</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>SYSTEM_CRITICAL_FAILURE</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; user-select: none; -webkit-user-select: none; }
+  * { margin:0; padding:0; box-sizing:border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  
+  /* Полная блокировка экрана и скролла */
   html, body { 
     background:#000; overflow:hidden; font-family: 'Courier New', monospace; 
-    height: 100dvh; width: 100vw; color:#0f0; position: fixed; touch-action: none;
+    height: 100vh; width: 100vw; color:#0f0; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    touch-action: none; overscroll-behavior: none;
   }
   
-  /* Стартовый экран */
   #start-screen {
     position:fixed; inset:0; background:#000; z-index:9999;
     display:flex; justify-content:center; align-items:center; flex-direction:column;
     color:#f00; text-align:center; padding:20px;
   }
   #start-btn {
-    padding:15px 40px; font-size:18px; background:#111; color:#f00; 
+    padding:20px 50px; font-size:20px; background:#200; color:#f00; 
     border:2px solid #f00; cursor:pointer; font-weight:bold;
     margin-top:20px; font-family: 'Courier New', monospace;
-    text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 10px #f00;
+    text-transform: uppercase; letter-spacing: 3px; box-shadow: 0 0 15px #f00;
   }
   #start-btn:active { background:#f00; color:#000; }
 
   /* Терминал */
-  #terminal { 
-    padding:15px; font-size:13px; line-height: 1.3; 
-    white-space:pre-wrap; word-break:break-all; font-weight:bold;
-    height: 100%; overflow-y: hidden;
-  }
-  .red { color:#f00; text-shadow: 0 0 8px #f00; }
+  #terminal { padding:15px; font-size:14px; line-height: 1.2; white-space:pre-wrap; word-break:break-all; font-weight:bold; height: 100%; overflow: hidden; }
+  .red { color:#f00; text-shadow: 0 0 10px #f00; }
   .white { color:#fff; }
   .green { color:#0f0; text-shadow: 0 0 5px #0f0; }
   .gray { color:#555; }
   
-  /* Эффекты */
-  #flash { position:fixed; inset:0; background:#f00; opacity:0; pointer-events:none; z-index:99; mix-blend-mode:difference; }
-  #shake { position:fixed; inset:0; z-index: 10;}
+  /* Эффекты тряски */
+  #shake { position:fixed; inset:0; z-index: 10; }
   @keyframes shake {
-    0%{transform:translate(0,0)} 10%{transform:translate(-8px,4px) rotate(-1deg)}
-    20%{transform:translate(8px,-4px) rotate(1deg)} 30%{transform:translate(-6px,-6px)}
-    40%{transform:translate(6px,6px)} 50%{transform:translate(-8px,2px)}
-    60%{transform:translate(8px,-2px)} 70%{transform:translate(-2px,8px)}
-    80%{transform:translate(2px,-8px)} 90%{transform:translate(-4px,0)}
+    0%{transform:translate(0,0)} 10%{transform:translate(-10px,5px) rotate(-1deg)}
+    20%{transform:translate(10px,-5px) rotate(1deg)} 30%{transform:translate(-8px,-8px)}
+    40%{transform:translate(8px,8px)} 50%{transform:translate(-10px,3px)}
+    60%{transform:translate(10px,-3px)} 70%{transform:translate(-3px,10px)}
+    80%{transform:translate(3px,-10px)} 90%{transform:translate(-5px,0)}
     100%{transform:translate(0,0)}
   }
   .shaking { animation: shake .08s infinite; }
-  
-  /* Оверлей блокировки */
+  #flash { position:fixed; inset:0; background:#f00; opacity:0; pointer-events:none; z-index:99; mix-blend-mode:difference; }
+
+  /* Оверлей на весь экран - БЛОКИРОВКА */
   #lock-overlay {
     position: fixed; inset: 0; z-index: 900;
-    background: rgba(20, 0, 0, 0.7);
+    background: #050000; /* Почти черный с красным оттенком */
     display: none; justify-content: center; align-items: center;
     flex-direction: column; pointer-events: all;
+    border: 15px solid #f00;
   }
+  
+  /* ГИГАНТСКИЙ Таймер */
   #timer {
-    font-size: 100px; color: #f00; font-weight: bold;
-    text-shadow: 0 0 40px #f00; font-family: 'Courier New', monospace;
+    font-size: 35vh; /* Занимает треть экрана по высоте */
+    color: #f00; font-weight: bold;
+    text-shadow: 0 0 50px #f00, 0 0 100px #f00; 
+    font-family: 'Courier New', monospace;
+    line-height: 1;
   }
   #timer-text {
-    color: #fff; font-size: 16px; letter-spacing: 3px; margin-bottom: 20px;
+    color: #f00; font-size: 24px; letter-spacing: 5px; margin-bottom: 10px;
+    text-align: center; text-shadow: 0 0 10px #f00;
   }
+  #warning-text {
+    color: #fff; font-size: 16px; margin-top: 20px; text-align: center; animation: blink 0.5s infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-  /* Финальный экран - Смерть системы */
+  /* Синий экран смерти */
   #final {
     position:fixed; inset:0; display:none; z-index:1000;
-    background:#000; color:#fff; text-align:left;
+    background:#0000AA; color:#fff; text-align:left;
     padding:20px; font-family:'Courier New', monospace; font-size: 14px;
-    flex-direction: column; justify-content: flex-start;
+    flex-direction: column; justify-content: center;
   }
-  .blue-screen {
-    background: #0000AA;
-    color: #fff;
-    padding: 20px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  .blue-screen h2 { background: #AAAAAA; color: #0000AA; padding: 2px 10px; display: inline-block; font-size: 16px; margin-bottom: 20px; text-align: center; align-self: center; }
-  .blue-screen p { margin-bottom: 15px; line-height: 1.4; text-align: center; }
+  #final h2 { background: #AAAAAA; color: #0000AA; padding: 2px 10px; display: inline-block; font-size: 18px; margin-bottom: 20px; text-align: center; align-self: center; }
+  #final p { margin-bottom: 15px; line-height: 1.4; text-align: center; }
 </style>
 </head>
 <body>
 
 <div id="start-screen">
-  <h1 style="font-size:1.2em; margin-bottom:10px;">CRITICAL_UPDATE.sys</h1>
-  <p style="color:#666; font-size: 0.8em;">Разрешить установку обновления?</p>
-  <button id="start-btn">УСТАНОВИТЬ</button>
+  <h1 style="font-size:1.2em; margin-bottom:10px;">SYSTEM_UPDATE.exe</h1>
+  <p style="color:#666; font-size: 0.8em;">Загрузка критических файлов...</p>
+  <button id="start-btn">ЗАПУСТИТЬ</button>
 </div>
 
 <div id="shake">
@@ -98,23 +98,25 @@
 <div id="flash"></div>
 
 <div id="lock-overlay">
-  <div id="timer-text">УНИЧТОЖЕНИЕ СЕКТОРОВ:</div>
+  <div id="timer-text">УНИЧТОЖЕНИЕ ДАННЫХ:</div>
   <div id="timer">10</div>
+  <div id="warning-text">НЕ ПЫТАЙТЕСЬ ЗАКРЫТЬ СТРАНИЦУ</div>
 </div>
 
 <div id="final">
-  <div class="blue-screen">
-    <h2>FATAL SYSTEM ERROR</h2>
-    <p>Произошла критическая ошибка.</p>
-    <p>Ядро системы повреждено. Все данные зашифрованы.</p>
-    <p>Код ошибки: 0x000000DEAD</p>
-    <p style="margin-top: 30px; color: #aaa;">Для восстановления обратитесь в сервисный центр.</p>
-  </div>
+  <h2>FATAL SYSTEM ERROR</h2>
+  <p>Произошла критическая ошибка.</p>
+  <p>Ядро системы повреждено. Все данные зашифрованы.</p>
+  <p>Код ошибки: 0x000000DEAD</p>
+  <p style="margin-top: 30px; color: #aaa;">Устройство заблокировано.</p>
 </div>
 
 <script>
-// Блокировка закрытия вкладки
 let isLocked = false;
+let fullscreenInterval;
+let historyInterval;
+
+// Блокировка закрытия и свайпов
 window.addEventListener('beforeunload', function (e) {
   if (isLocked) {
     e.preventDefault();
@@ -123,15 +125,21 @@ window.addEventListener('beforeunload', function (e) {
   }
 });
 
-// Блокировка контекстного меню и зума
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
+// Блокировка скролла и свайпов пальцем
+document.addEventListener('touchmove', function(e) {
+    if (isLocked) {
+        e.preventDefault();
+    }
+}, { passive: false });
 
 // Ловушка для кнопки "Назад" (мобильный браузер)
 history.pushState(null, null, location.href);
 window.onpopstate = function () {
     if (isLocked) {
-        history.go(1); // Возвращает пользователя обратно
+        history.pushState(null, null, location.href);
     }
 };
 
@@ -146,7 +154,7 @@ const final = document.getElementById('final');
 
 let audioCtx;
 
-// Звук (жесткий писк)
+// Жуткий системный звук
 function playGlitchSound() {
   if (!audioCtx) return;
   const osc = audioCtx.createOscillator();
@@ -163,7 +171,7 @@ function playGlitchSound() {
 }
 
 const lines = [
-  {t: "root@android:/ # ./exploit", c: "gray"},
+  {t: "root@device:/ # ./kernel_panic", c: "gray"},
   {t: "#include <sys/mman.h>", c: "gray"},
   {t: "#include <unistd.h>", c: "gray"},
   {t: "void payload() {", c: "white"},
@@ -173,15 +181,16 @@ const lines = [
   {t: "\n[ OK ] Accessing /system/bin/sh", c: "green"},
   {t: "[ OK ] Root privileges granted", c: "green"},
   {t: "[ WARN ] Bypassing SELinux...", c: "red"},
-  {t: "[ ! ] IMEI retrieved: 35*************", c: "red"},
-  {t: "[ ! ] Uploading /data/local/tmp to C2...", c: "red"},
+  {t: "[ ! ] IMEI: 35*************", c: "red"},
+  {t: "[ ! ] DEVICE MAC: 00:1A:2B:3C:4D:5E", c: "red"},
+  {t: "[ ! ] CAMERA ACCESS GRANTED", c: "red"},
+  {t: "[ ! ] UPLOADING /data/ TO C2...", c: "red"},
   {t: "\n# rm -rf /system/", c: "white"},
   {t: "[ ERR ] Memory corruption at 0x0000DEAD", c: "red"},
   {t: "[ ERR ] Kernel panic", c: "red"},
   {t: "\nАХАЗАЗА...", c: "red"},
   {t: "ПИЗДА ТЕБЕ.", c: "red"},
-  {t: "СМЕРТЬ_СИСТЕМЫ.EXE ЗАПУЩЕН", c: "red"},
-  {t: "ОСТАЛОСЬ СЕКУНД: 10", c: "red"}
+  {t: "СИСТЕМА УНИЧТОЖЕНА", c: "red"}
 ];
 
 let currentLine = 0;
@@ -202,7 +211,6 @@ function typeLine() {
     div.textContent += line.t[charIndex] || '';
     charIndex++;
     
-    // Вибрация для мобильных устройств (если поддерживается)
     if (charIndex % 10 === 0 && line.c === 'red') {
         playGlitchSound();
         if (navigator.vibrate) navigator.vibrate(50); 
@@ -211,7 +219,7 @@ function typeLine() {
     if (charIndex > line.t.length) {
       clearInterval(typer);
       currentLine++;
-      setTimeout(typeLine, Math.random() * 40 + 10); 
+      setTimeout(typeLine, Math.random() * 30 + 10); 
     }
   }, 5);
 }
@@ -221,10 +229,21 @@ function startCountdown() {
   shake.classList.add('shaking');
   lockOverlay.style.display = 'flex';
   
-  // Пытаемся включить полный экран (на мобильных работает только после клика)
+  // Попытка включить полный экран
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen().catch(() => {});
   }
+
+  // АГРЕССИВНАЯ БЛОКИРОВКА: Постоянно проверяем, не вышел ли пользователь из полного экрана, и возвращаем обратно
+  fullscreenInterval = setInterval(() => {
+    if (isLocked) {
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+        // Спамим историю, чтобы кнопка назад не работала
+        history.pushState(null, null, location.href);
+    }
+  }, 500);
 
   let timeLeft = 10;
   
@@ -232,30 +251,32 @@ function startCountdown() {
     timeLeft--;
     timerEl.textContent = timeLeft;
     
-    flash.style.opacity = flash.style.opacity === '0.8' ? '0' : '0.8';
+    // Жесткое мигание и вибрация
+    flash.style.opacity = flash.style.opacity === '0.9' ? '0' : '0.9';
     playGlitchSound();
-    if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]); 
     
     if(timeLeft < 5) {
       shake.style.animationDuration = "0.04s";
+      timerEl.style.color = "#fff";
     }
 
     if (timeLeft <= 0) {
       clearInterval(countdownInterval);
+      clearInterval(fullscreenInterval);
       endPrank();
     }
   }, 1000);
 }
 
 function endPrank() {
-  // Снимаем блокировку (чтобы можно было закрыть вкладку)
   isLocked = false; 
   shake.classList.remove('shaking');
   flash.style.opacity = '0';
   lockOverlay.style.display = 'none';
   terminal.style.display = 'none';
   
-  // Показываем синий экран смерти
+  // Финальный синий экран
   final.style.display = 'flex';
   
   if (document.exitFullscreen && document.fullscreenElement) {
@@ -267,7 +288,6 @@ startBtn.addEventListener('click', () => {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   startScreen.style.display = 'none';
   
-  // Полный экран
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen().catch(() => {});
   }
