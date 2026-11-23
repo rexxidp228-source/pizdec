@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>SYS_MELTDOWN_OVERKILL</title>
+<title>SYS_PARALYSIS</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   
@@ -13,65 +13,44 @@
     position: fixed; top: 0; left: 0; right: 0; bottom: 0; touch-action: none; overscroll-behavior: none;
   }
 
-  /* Слой с частицами cznull */
+  /* iframe с частицами ТЕПЕРЬ НА ПЕРЕДНЕМ ПЛАНЕ (под текстом) */
   #stress-layer {
     position: fixed; inset: 0; width: 100vw; height: 100vh;
     z-index: 1; border: none;
   }
 
-  /* Второй Canvas для добивания видеокарты (2D) */
-  #gpu-killer-2d {
-    position: fixed; inset: 0; width: 100vw; height: 100vh;
-    z-index: 2; opacity: 0.4; pointer-events: none;
-  }
-
-  /* Затемняющий слой */
-  #bg-overlay {
-    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9);
-    z-index: 3; pointer-events: none;
-  }
-
-  /* CRT Эффект */
-  body::after {
-    content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.5) 50%);
-    z-index: 9998; background-size: 100% 4px; pointer-events: none; opacity: 0.9;
-  }
-
-  /* Стартовый экран */
+  /* Текст будет поверх частиц. Убираем черный фон, чтобы iframe не засыпал. */
+  
   #start-screen { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #f00; text-align: center; padding: 20px; }
-  #start-screen h1 { font-size: 1.5em; text-shadow: 0 0 10px #f00; margin-bottom: 10px; animation: textFlicker 1s infinite; }
-  @keyframes textFlicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-  #start-btn { padding: 20px 60px; font-size: 20px; background: #1a0000; color: #f00; border: 2px solid #f00; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 4px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.6); }
-  #start-btn:active { background: #f00; color: #000; box-shadow: 0 0 50px #f00; }
+  #start-screen h1 { font-size: 1.5em; text-shadow: 0 0 10px #f00; margin-bottom: 10px; }
+  #start-btn { padding: 20px 60px; font-size: 20px; background: #1a0000; color: #f00; border: 2px solid #f00; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 4px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4); }
+  #start-btn:active { background: #f00; color: #000; }
 
-  /* Терминал */
-  #terminal { padding: 15px; font-size: 12px; line-height: 1.2; white-space: pre-wrap; word-break: break-all; font-weight: bold; height: 100%; overflow: hidden; text-align: left; z-index: 10; position: relative;}
-  .red { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
-  .white { color: #ffffff; }
-  .green { color: #00ff00; text-shadow: 0 0 5px #00ff00; }
-  .gray { color: #666666; }
-  .yellow { color: #ffff00; text-shadow: 0 0 5px #ffff00; }
+  /* Терминал с жесткой тенью текста, чтобы читалось на фоне частиц */
+  #terminal { padding: 15px; font-size: 12px; line-height: 1.2; white-space: pre-wrap; word-break: break-all; font-weight: bold; height: 100%; overflow: hidden; text-align: left; z-index: 10; position: relative; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;}
+  .red { color: #ff0000; text-shadow: 0 0 8px #ff0000, 2px 2px 0 #000; }
+  .white { color: #ffffff; text-shadow: 2px 2px 0 #000; }
+  .green { color: #00ff00; text-shadow: 0 0 5px #00ff00, 2px 2px 0 #000; }
+  .gray { color: #888888; text-shadow: 2px 2px 0 #000; }
+  .yellow { color: #ffff00; text-shadow: 0 0 5px #ffff00, 2px 2px 0 #000; }
 
-  /* Эффекты */
   #shake { position: fixed; inset: 0; z-index: 10; }
   @keyframes shake {
     0% { transform: translate(0, 0); } 10% { transform: translate(-15px, 8px) rotate(-2deg); } 20% { transform: translate(15px, -8px) rotate(2deg); } 30% { transform: translate(-10px, -10px) rotate(-1deg); }
     40% { transform: translate(10px, 10px) rotate(1deg); } 50% { transform: translate(-15px, 5px) rotate(-2deg); } 60% { transform: translate(15px, -5px) rotate(2deg); } 70% { transform: translate(-5px, 15px) rotate(-1deg); }
     80% { transform: translate(5px, -15px) rotate(1deg); } 90% { transform: translate(-10px, 0); } 100% { transform: translate(0, 0); }
   }
-  .shaking { animation: shake 0.04s infinite; }
+  .shaking { animation: shake 0.05s infinite; }
   #flash { position: fixed; inset: 0; background: #f00; opacity: 0; pointer-events: none; z-index: 99; mix-blend-mode: difference; }
 
-  /* Оверлей */
-  #lock-overlay { position: fixed; inset: 0; z-index: 900; background: rgba(10, 0, 0, 0.95); display: none; justify-content: center; align-items: center; flex-direction: column; pointer-events: all; border: 20px solid #f00; box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.5); }
+  /* Оверлей таймера теперь тоже полупрозрачный */
+  #lock-overlay { position: fixed; inset: 0; z-index: 900; background: rgba(10, 0, 0, 0.7); display: none; justify-content: center; align-items: center; flex-direction: column; pointer-events: all; border: 20px solid #f00; box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.5); }
   #timer-text { color: #f00; font-size: 20px; letter-spacing: 5px; margin-bottom: 10px; text-align: center; text-shadow: 0 0 15px #f00; font-weight: bold; }
   #timer { font-size: 35vh; color: #f00; font-weight: bold; text-shadow: 0 0 60px #f00, 0 0 120px #f00; line-height: 1; transition: color 0.3s, text-shadow 0.3s; }
-  #warning-text { color: #fff; font-size: 16px; margin-top: 20px; text-align: center; animation: blink 0.2s infinite; font-weight: bold; letter-spacing: 2px; }
+  #warning-text { color: #fff; font-size: 16px; margin-top: 20px; text-align: center; animation: blink 0.3s infinite; font-weight: bold; letter-spacing: 2px; text-shadow: 2px 2px 0 #000;}
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-  #glitch-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 950; opacity: 0.2; font-size: 8px; color: #0f0; overflow: hidden; word-break: break-all; }
+  #glitch-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 950; opacity: 0.3; font-size: 8px; color: #0f0; overflow: hidden; word-break: break-all; }
 
-  /* Синий экран */
   #final { position: fixed; inset: 0; display: none; z-index: 1000; background: #0000AA; color: #fff; text-align: left; padding: 20px; font-size: 13px; flex-direction: column; justify-content: flex-start; overflow: hidden; }
   #final h2 { background: #AAAAAA; color: #0000AA; padding: 2px 15px; display: inline-block; font-size: 16px; margin-bottom: 20px; align-self: center; font-weight: normal; }
   #final p { margin-bottom: 12px; line-height: 1.4; text-align: left; }
@@ -80,17 +59,12 @@
 </head>
 <body>
 
-<!-- 1. ТЯЖЕЛЫЙ IFRAME CZNULL -->
+<!-- IFRAME С ЧАСТИЦАМИ (Теперь он главный на экране, браузер не сможет его скрыть) -->
 <iframe id="stress-layer" src="https://cznull.github.io/"></iframe>
 
-<!-- 2. ТЯЖЕЛЫЙ CANVAS 2D -->
-<canvas id="gpu-killer-2d"></canvas>
-
-<div id="bg-overlay"></div>
-
 <div id="start-screen">
-  <h1>[!] SYSTEM_MELTDOWN.exe</h1>
-  <p>КРИТИЧЕСКАЯ УГРОЗА. НАГРУЗКА ВСЕХ ЯДЕР.</p>
+  <h1>[!] SYSTEM_PARALYSIS.exe</h1>
+  <p>ВНИМАНИЕ: ОТКАЗ СИСТЕМЫ НЕИЗБЕЖЕН.</p>
   <button id="start-btn">ЗАПУСТИТЬ</button>
 </div>
 
@@ -118,103 +92,8 @@
 
 <script>
 let isLocked = false;
-let fullscreenInterval, glitchInterval, countdownInterval, memoryBombInterval;
+let countdownInterval, glitchInterval, paralysisInterval, animationKillerInterval;
 let endTime = 0;
-let cpuWorkers = [];
-let animId;
-
-/* =====================================================================
-   1. 16 WEB WORKERS (ВЫЖИМАЕМ ПРОЦЕССОР ДО 100% НА ВСЕХ ЯДРАХ)
-   ===================================================================== */
-const workerCode = `
-    // Бесконечный цикл, который не дает процессору расслабиться
-    setInterval(() => {
-        let arr = [];
-        for (let i = 0; i < 500000; i++) {
-            arr.push(Math.sin(i) * Math.cos(i) * Math.tan(i % 100));
-        }
-    }, 1);
-`;
-const blob = new Blob([workerCode], {type: 'application/javascript'});
-const workerUrl = URL.createObjectURL(blob);
-
-function startCpuBurn() {
-    // Snapdragon 8 Elite имеет 8 ядер. Запускаем 16 потоков (по 2 на ядро)
-    for (let i = 0; i < 16; i++) {
-        let w = new Worker(workerUrl);
-        cpuWorkers.push(w);
-    }
-}
-
-function stopCpuBurn() {
-    cpuWorkers.forEach(w => w.terminate());
-    cpuWorkers = [];
-}
-
-/* =====================================================================
-   2. ПОЖИРАТЕЛЬ ПАМЯТИ (FLOAT64ARRAY - БЫСТРЫЙ ВЫДЕЛ БОЛЬШИХ БЛОКОВ)
-   ===================================================================== */
-let memoryHog = [];
-function eatMemory() {
-    // Float64Array выделяет 8 байт на число. 
-    // Массив из 1 миллиона элементов = 8 Мегабайт.
-    // Выделяем 50 массивов за раз = 400 МБ за один тик.
-    for (let i = 0; i < 50; i++) {
-        let arr = new Float64Array(1000000);
-        // Заполняем, чтобы память точно не оптимизировалась
-        arr[0] = Math.random();
-        memoryHog.push(arr);
-    }
-    // Когда перевалит за 3-4 ГБ, браузер начнет задыхаться
-}
-
-/* =====================================================================
-   3. ТЯЖЕЛЫЙ CANVAS 2D (ДОБИВАЕМ ВИДЕОКАРТУ)
-   ===================================================================== */
-const canvas2d = document.getElementById('gpu-killer-2d');
-const ctx = canvas2d.getContext('2d');
-canvas2d.width = window.innerWidth;
-canvas2d.height = window.innerHeight;
-
-let particles2d = [];
-for(let i=0; i<5000; i++) {
-    particles2d.push({
-        x: Math.random() * canvas2d.width,
-        y: Math.random() * canvas2d.height,
-        size: Math.random() * 5 + 1
-    });
-}
-
-function draw2d() {
-    if (!isLocked) return;
-    ctx.clearRect(0, 0, canvas2d.width, canvas2d.height);
-    
-    // Ставим жуткую красную тень (очень сильно грузит GPU)
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = "red";
-    ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-
-    for (let p of particles2d) {
-        ctx.fillRect(p.x, p.y, p.size, p.size);
-        // Хаотичное движение
-        p.x += (Math.random() - 0.5) * 20;
-        p.y += (Math.random() - 0.5) * 20;
-    }
-    animId = requestAnimationFrame(draw2d);
-}
-
-/* =====================================================================
-   4. БЛОКИРОВКА ГЛАВНОГО ПОТОКА
-   ===================================================================== */
-function simulateSystemFreeze(ms) {
-    let start = Date.now();
-    // Полный ступор интерфейса. Ни кнопки, ни свайпы не работают.
-    while (Date.now() - start < ms) {} 
-}
-
-/* =====================================================================
-   5. ЛОГИКА ВИРУСА
-   ===================================================================== */
 
 if (sessionStorage.getItem('sys_infected') === 'true') {
     document.getElementById('start-screen').style.display = 'none';
@@ -276,6 +155,14 @@ function playGlitchSound() {
   osc.stop(audioCtx.currentTime + 0.2);
 }
 
+// ЖЕСТКАЯ ЗАМОРОЗКА ПОТОКА
+function absoluteParalysis(durationMs) {
+    let start = Date.now();
+    while (Date.now() - start < durationMs) {
+        // Полный ступор интерфейса
+    }
+}
+
 const lines = [
   {t: "root@device:/ # sudo inject_payload --force", c: "gray"},
   {t: "int main(int argc, char** argv) {", c: "white"},
@@ -319,9 +206,7 @@ function typeLine() {
     if (charIndex > line.t.length) {
       clearInterval(typer);
       currentLine++;
-      // Замораживаем на 1.5 секунды на каждой третьей строке
-      if (currentLine % 3 === 0) { simulateSystemFreeze(1500); }
-      setTimeout(typeLine, Math.random() * 10 + 5); 
+      setTimeout(typeLine, Math.random() * 20 + 10); 
     }
   }, 5);
 }
@@ -330,15 +215,10 @@ function startCountdown(isResuming) {
   isLocked = true; 
   
   if (!isResuming) {
-    sessionStorage.setItem('sys_infected', 'true');
-    endTime = Date.now() + 40000; 
-    sessionStorage.setItem('sys_end_time', endTime);
+      sessionStorage.setItem('sys_infected', 'true');
+      endTime = Date.now() + 40000; 
+      sessionStorage.setItem('sys_end_time', endTime);
   }
-
-  // ВКЛЮЧАЕМ ВСЕ АДСКИЕ МЕХАНИЗМЫ
-  startCpuBurn(); 
-  memoryBombInterval = setInterval(eatMemory, 50);
-  draw2d(); // Запускаем 2D рендер
 
   shake.classList.add('shaking');
   lockOverlay.style.display = 'flex';
@@ -347,19 +227,39 @@ function startCountdown(isResuming) {
     document.documentElement.requestFullscreen().catch(() => {});
   }
 
-  fullscreenInterval = setInterval(() => {
-    if (isLocked) {
-        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(() => {});
-        }
-        history.pushState(null, null, location.href);
-    }
-  }, 100);
+  // 1. АНИМАЦИОННЫЙ УБИЙЦА (Заставляет браузер перерисовывать тысячи элементов, грузя CPU/GPU в связке с cznull)
+  let dummyElements = [];
+  for (let i = 0; i < 500; i++) {
+      let el = document.createElement('div');
+      el.style.position = 'absolute';
+      el.style.width = '10px';
+      el.style.height = '10px';
+      el.style.background = 'red';
+      el.style.opacity = '0.01';
+      el.style.zIndex = '9999';
+      el.style.pointerEvents = 'none';
+      document.body.appendChild(el);
+      dummyElements.push(el);
+  }
+
+  animationKillerInterval = setInterval(() => {
+      if(!isLocked) return;
+      dummyElements.forEach(el => {
+          el.style.transform = `translate(${Math.random() * window.innerWidth}px, ${Math.random() * window.innerHeight}px)`;
+      });
+  }, 10);
+
+  // 2. БЛОКИРОВКА ГЛАВНОГО ПОТОКА
+  paralysisInterval = setInterval(() => {
+      if (isLocked) {
+          absoluteParalysis(1500); // 1.5 секунды полного ступора
+      }
+  }, 2000);
 
   glitchInterval = setInterval(() => {
     let chars = "ABCDEF0123456789_!@#$%^&*";
     let glitchText = "";
-    for(let i=0; i<800; i++) {
+    for(let i=0; i<500; i++) {
         glitchText += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     glitchLayer.textContent = glitchText;
@@ -374,9 +274,6 @@ function startCountdown(isResuming) {
     playGlitchSound();
     if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 600]); 
     
-    // Каждые 2 секунды жестко вешаем интерфейс
-    if (timeLeft % 2 === 0) { simulateSystemFreeze(2000); }
-    
     if(timeLeft === 20) {
         timerEl.style.color = "#ffcc00";
         timerEl.style.textShadow = "0 0 40px #ffcc00";
@@ -389,11 +286,9 @@ function startCountdown(isResuming) {
 
     if (timeLeft <= 0) {
       clearInterval(countdownInterval);
-      clearInterval(fullscreenInterval);
       clearInterval(glitchInterval);
-      clearInterval(memoryBombInterval);
-      stopCpuBurn();
-      cancelAnimationFrame(animId);
+      clearInterval(paralysisInterval);
+      clearInterval(animationKillerInterval);
       endPrank();
     }
   }, 1000);
@@ -402,10 +297,11 @@ function startCountdown(isResuming) {
 function endPrank() {
   isLocked = false; 
   sessionStorage.clear();
-  memoryHog = []; 
   
   document.getElementById('stress-layer').style.display = 'none';
-  canvas2d.style.display = 'none';
+  
+  // Очистка DOM от мусора
+  document.querySelectorAll('div[style*="opacity: 0.01"]').forEach(e => e.remove());
   
   shake.classList.remove('shaking');
   flash.style.opacity = '0';
