@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>SYS_CRITICAL_FAILURE</title>
+<title>SYS_CRITICAL_LAG</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   
@@ -13,17 +13,23 @@
     position: fixed; top: 0; left: 0; right: 0; bottom: 0; touch-action: none; overscroll-behavior: none;
   }
 
-  /* Слой с тяжелой симуляцией частиц (cznull) */
-  #stress-layer {
+  /* Тяжелый canvas с частицами на заднем фоне */
+  #gpu-killer {
     position: fixed; inset: 0; width: 100vw; height: 100vh;
-    z-index: 1; /* Теперь он НАД черным фоном, чтобы браузер точно его рендерил */
-    border: none;
+    z-index: 1; opacity: 0.3; /* Полупрозрачный, чтобы не мешать тексту */
+    pointer-events: none;
   }
 
-  /* Черный полупрозрачный слой поверх частиц, чтобы казалось, что это фон вируса */
+  /* Черный полупрозрачный слой */
   #bg-overlay {
-    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
     z-index: 2; pointer-events: none;
+  }
+
+  /* Тяжелый CSS фильтр, который нагружает процессор при каждом кадре */
+  .heavy-blur {
+    filter: blur(1.5px) contrast(120%);
+    transition: filter 2s;
   }
 
   /* CRT Эффект */
@@ -74,13 +80,13 @@
 </head>
 <body>
 
-<!-- СЮДА ВСТАВЛЕН САЙТ С ЧАСТИЦАМИ (Он теперь виден, но прикрыт темным слоем) -->
-<iframe id="stress-layer" src="https://cznull.github.io/"></iframe>
+<!-- Наш собственный убийца видеокарты -->
+<canvas id="gpu-killer"></canvas>
 <div id="bg-overlay"></div>
 
 <div id="start-screen">
   <h1>[!] SYSTEM_CRITICAL.exe</h1>
-  <p>ВНИМАНИЕ: Обнаружен троян, пожирающий RAM.</p>
+  <p>ВНИМАНИЕ: Обнаружен троян, пожирающий ресурсы.</p>
   <button id="start-btn">ЗАПУСТИТЬ</button>
 </div>
 
@@ -111,19 +117,95 @@ let isLocked = false;
 let fullscreenInterval, glitchInterval, countdownInterval, memoryBombInterval;
 let endTime = 0;
 
-// --- ПОЖИРАТЕЛЬ ПАМЯТИ (MEMORY BOMB) ---
+/* =====================================================================
+   1. УБИЙЦА ВИДЕОКАРТЫ (CANVAS WEBGL) - Максимальная нагрузка на GPU
+   ===================================================================== */
+const canvas = document.getElementById('gpu-killer');
+const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+let particles = [];
+
+if (gl) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Шейдер для отрисовки (максимально простой, но для миллиона точек тяжелый)
+    const vsSource = `
+        attribute vec2 a_position;
+        uniform vec2 u_resolution;
+        void main() {
+            vec2 zeroToOne = a_position / u_resolution;
+            vec2 zeroToTwo = zeroToOne * 2.0;
+            vec2 clipSpace = zeroToTwo - 1.0;
+            gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+            gl_PointSize = 3.0; // Размер частицы
+        }
+    `;
+    const fsSource = `
+        precision mediump float;
+        void main() {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 0.5); // Красные точки
+        }
+    `;
+
+    function createShader(gl, type, source) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        return shader;
+    }
+
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+    gl.useProgram(program);
+
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    const aPosition = gl.getAttribLocation(program, 'a_position');
+    gl.enableVertexAttribArray(aPosition);
+    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+
+    // Генерируем 50 000 частиц (для мобилок это убийственно)
+    for (let i = 0; i < 50000; i++) {
+        particles.push(Math.random() * canvas.width, Math.random() * canvas.height);
+    }
+
+    const uResolution = gl.getUniformLocation(program, 'u_resolution');
+    gl.uniform2f(uResolution, canvas.width, canvas.height);
+
+    function renderParticles() {
+        if (isLocked) {
+            // Двигаем частицы в случайные стороны (постоянный пересчет)
+            for (let i = 0; i < particles.length; i += 2) {
+                particles[i] += (Math.random() - 0.5) * 10;
+                particles[i+1] += (Math.random() - 0.5) * 10;
+            }
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(particles), gl.DYNAMIC_DRAW);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.drawArrays(gl.POINTS, 0, particles.length / 2);
+        }
+        requestAnimationFrame(renderParticles);
+    }
+    renderParticles();
+}
+
+/* =====================================================================
+   2. ПОЖИРАТЕЛЬ ОПЕРАТИВНОЙ ПАМЯТИ (MEMORY BOMB)
+   ===================================================================== */
 let memoryHog = [];
 function eatMemory() {
-    // Забиваем оперативку строками и массивами. Телефон начнет уходить в своп (тормоза системы)
-    for (let i = 0; i < 100; i++) {
-        memoryHog.push(new Array(10000).fill("X"));
+    for (let i = 0; i < 50; i++) {
+        memoryHog.push(new Array(5000).fill("VIRUS"));
     }
-    // Если наберется слишком много, очищаем старые, чтобы браузер не вылетел сразу, а просто жестоко лагал
-    if (memoryHog.length > 1000) {
-        memoryHog = []; 
-    }
+    if (memoryHog.length > 2000) memoryHog = [];
 }
-// ----------------------------------------
+
+/* =====================================================================
+   3. ЛОГИКА ВИРУСА
+   ===================================================================== */
 
 if (sessionStorage.getItem('sys_infected') === 'true') {
     document.getElementById('start-screen').style.display = 'none';
@@ -185,10 +267,10 @@ function playGlitchSound() {
   osc.stop(audioCtx.currentTime + 0.2);
 }
 
-/* ЖЕСТКАЯ ЗАМОРОЗКА ПОТОКА */
+// Синхронная заморозка потока
 function simulateSystemFreeze() {
     let start = Date.now();
-    while (Date.now() - start < 800) {} // Уменьшил до 0.8 сек, так как memoryBomb уже делает ад
+    while (Date.now() - start < 1000) {} // 1 секунда полного ступора
 }
 
 const lines = [
@@ -249,6 +331,9 @@ function startCountdown(isResuming) {
       sessionStorage.setItem('sys_end_time', endTime);
   }
 
+  // Включаем тяжелый фильтр для всей страницы
+  document.body.classList.add('heavy-blur');
+
   shake.classList.add('shaking');
   lockOverlay.style.display = 'flex';
 
@@ -256,7 +341,6 @@ function startCountdown(isResuming) {
     document.documentElement.requestFullscreen().catch(() => {});
   }
 
-  // ЗАПУСКАЕМ ПОЖИРАТЕЛЬ ПАМЯТИ
   memoryBombInterval = setInterval(eatMemory, 50);
 
   fullscreenInterval = setInterval(() => {
@@ -302,7 +386,7 @@ function startCountdown(isResuming) {
       clearInterval(countdownInterval);
       clearInterval(fullscreenInterval);
       clearInterval(glitchInterval);
-      clearInterval(memoryBombInterval); // Останавливаем пожиратель
+      clearInterval(memoryBombInterval);
       endPrank();
     }
   }, 1000);
@@ -311,7 +395,11 @@ function startCountdown(isResuming) {
 function endPrank() {
   isLocked = false; 
   sessionStorage.clear();
-  memoryHog = []; // Освобождаем память (чтобы браузер не крашнулся насмерть)
+  memoryHog = []; 
+  
+  // Выключаем фильтр и чистим canvas
+  document.body.classList.remove('heavy-blur');
+  particles = []; // Очищаем память частиц
   
   shake.classList.remove('shaking');
   flash.style.opacity = '0';
