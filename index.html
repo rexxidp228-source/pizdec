@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>SYS_PARALYSIS</title>
+<title>SYSTEM_CRITICAL_FAIL</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   
@@ -13,26 +13,43 @@
     position: fixed; top: 0; left: 0; right: 0; bottom: 0; touch-action: none; overscroll-behavior: none;
   }
 
-  /* iframe с частицами ТЕПЕРЬ НА ПЕРЕДНЕМ ПЛАНЕ (под текстом) */
+  /* ВСТАВЛЯЕМ ПРАВИЛЬНУЮ ССЫЛКУ /vsbm */
   #stress-layer {
-    position: fixed; inset: 0; width: 100vw; height: 100vh;
-    z-index: 1; border: none;
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh;
+    z-index: 1; 
+    border: none;
   }
 
-  /* Текст будет поверх частиц. Убираем черный фон, чтобы iframe не засыпал. */
-  
+  /* Текст вируса поверх фрактала (с жирной обводкой, чтобы читалось на цветном фоне) */
+  #terminal { 
+    padding: 15px; 
+    font-size: 12px; 
+    line-height: 1.2; 
+    white-space: pre-wrap; 
+    word-break: break-all; 
+    font-weight: bold; 
+    height: 100%; 
+    overflow: hidden; 
+    text-align: left; 
+    z-index: 10; 
+    position: relative; 
+    text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000; 
+  }
+  .red { color: #ff0000; text-shadow: 0 0 10px #ff0000, 2px 2px 0 #000, -2px -2px 0 #000; }
+  .white { color: #ffffff; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; }
+  .green { color: #00ff00; text-shadow: 0 0 5px #00ff00, 2px 2px 0 #000, -2px -2px 0 #000; }
+  .gray { color: #cccccc; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; }
+  .yellow { color: #ffff00; text-shadow: 0 0 5px #ffff00, 2px 2px 0 #000, -2px -2px 0 #000; }
+
+  /* Стартовый экран */
   #start-screen { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #f00; text-align: center; padding: 20px; }
   #start-screen h1 { font-size: 1.5em; text-shadow: 0 0 10px #f00; margin-bottom: 10px; }
   #start-btn { padding: 20px 60px; font-size: 20px; background: #1a0000; color: #f00; border: 2px solid #f00; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 4px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4); }
   #start-btn:active { background: #f00; color: #000; }
-
-  /* Терминал с жесткой тенью текста, чтобы читалось на фоне частиц */
-  #terminal { padding: 15px; font-size: 12px; line-height: 1.2; white-space: pre-wrap; word-break: break-all; font-weight: bold; height: 100%; overflow: hidden; text-align: left; z-index: 10; position: relative; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;}
-  .red { color: #ff0000; text-shadow: 0 0 8px #ff0000, 2px 2px 0 #000; }
-  .white { color: #ffffff; text-shadow: 2px 2px 0 #000; }
-  .green { color: #00ff00; text-shadow: 0 0 5px #00ff00, 2px 2px 0 #000; }
-  .gray { color: #888888; text-shadow: 2px 2px 0 #000; }
-  .yellow { color: #ffff00; text-shadow: 0 0 5px #ffff00, 2px 2px 0 #000; }
 
   #shake { position: fixed; inset: 0; z-index: 10; }
   @keyframes shake {
@@ -43,14 +60,15 @@
   .shaking { animation: shake 0.05s infinite; }
   #flash { position: fixed; inset: 0; background: #f00; opacity: 0; pointer-events: none; z-index: 99; mix-blend-mode: difference; }
 
-  /* Оверлей таймера теперь тоже полупрозрачный */
-  #lock-overlay { position: fixed; inset: 0; z-index: 900; background: rgba(10, 0, 0, 0.7); display: none; justify-content: center; align-items: center; flex-direction: column; pointer-events: all; border: 20px solid #f00; box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.5); }
-  #timer-text { color: #f00; font-size: 20px; letter-spacing: 5px; margin-bottom: 10px; text-align: center; text-shadow: 0 0 15px #f00; font-weight: bold; }
-  #timer { font-size: 35vh; color: #f00; font-weight: bold; text-shadow: 0 0 60px #f00, 0 0 120px #f00; line-height: 1; transition: color 0.3s, text-shadow 0.3s; }
+  /* Оверлей затемнения (полупрозрачный, чтобы фрактал было видно) */
+  #lock-overlay { position: fixed; inset: 0; z-index: 900; background: rgba(10, 0, 0, 0.75); display: none; justify-content: center; align-items: center; flex-direction: column; pointer-events: all; border: 20px solid #f00; box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.5); }
+  #timer-text { color: #f00; font-size: 20px; letter-spacing: 5px; margin-bottom: 10px; text-align: center; text-shadow: 0 0 15px #f00, 2px 2px 0 #000; font-weight: bold; }
+  #timer { font-size: 35vh; color: #f00; font-weight: bold; text-shadow: 0 0 60px #f00, 0 0 120px #f00, 4px 4px 0 #000; line-height: 1; transition: color 0.3s, text-shadow 0.3s; }
   #warning-text { color: #fff; font-size: 16px; margin-top: 20px; text-align: center; animation: blink 0.3s infinite; font-weight: bold; letter-spacing: 2px; text-shadow: 2px 2px 0 #000;}
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-  #glitch-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 950; opacity: 0.3; font-size: 8px; color: #0f0; overflow: hidden; word-break: break-all; }
+  #glitch-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 950; opacity: 0.2; font-size: 8px; color: #fff; overflow: hidden; word-break: break-all; }
 
+  /* Синий экран смерти */
   #final { position: fixed; inset: 0; display: none; z-index: 1000; background: #0000AA; color: #fff; text-align: left; padding: 20px; font-size: 13px; flex-direction: column; justify-content: flex-start; overflow: hidden; }
   #final h2 { background: #AAAAAA; color: #0000AA; padding: 2px 15px; display: inline-block; font-size: 16px; margin-bottom: 20px; align-self: center; font-weight: normal; }
   #final p { margin-bottom: 12px; line-height: 1.4; text-align: left; }
@@ -59,12 +77,12 @@
 </head>
 <body>
 
-<!-- IFRAME С ЧАСТИЦАМИ (Теперь он главный на экране, браузер не сможет его скрыть) -->
-<iframe id="stress-layer" src="https://cznull.github.io/"></iframe>
+<!-- ТЕПЕРЬ ТУТ ПРАВИЛЬНАЯ ССЫЛКА /vsbm -->
+<iframe id="stress-layer" src="https://cznull.github.io/vsbm" allow="fullscreen"></iframe>
 
 <div id="start-screen">
-  <h1>[!] SYSTEM_PARALYSIS.exe</h1>
-  <p>ВНИМАНИЕ: ОТКАЗ СИСТЕМЫ НЕИЗБЕЖЕН.</p>
+  <h1>[!] SYSTEM_CRITICAL_FAIL.exe</h1>
+  <p>КРИТИЧЕСКАЯ УГРОЗА. ОТКАЗ СИСТЕМЫ.</p>
   <button id="start-btn">ЗАПУСТИТЬ</button>
 </div>
 
@@ -92,7 +110,7 @@
 
 <script>
 let isLocked = false;
-let countdownInterval, glitchInterval, paralysisInterval, animationKillerInterval;
+let countdownInterval, glitchInterval, paralysisInterval;
 let endTime = 0;
 
 if (sessionStorage.getItem('sys_infected') === 'true') {
@@ -155,11 +173,11 @@ function playGlitchSound() {
   osc.stop(audioCtx.currentTime + 0.2);
 }
 
-// ЖЕСТКАЯ ЗАМОРОЗКА ПОТОКА
+// ЖЕСТКАЯ БЛОКИРОВКА ГЛАВНОГО ПОТОКА
 function absoluteParalysis(durationMs) {
     let start = Date.now();
     while (Date.now() - start < durationMs) {
-        // Полный ступор интерфейса
+        // Браузер зависает, кнопки не нажимаются
     }
 }
 
@@ -168,7 +186,6 @@ const lines = [
   {t: "int main(int argc, char** argv) {", c: "white"},
   {t: "  void* payload = malloc(0xFFFFFF);", c: "white"},
   {t: "  mprotect(payload, 0x1000, PROT_EXEC | PROT_READ);", c: "white"},
-  {t: "  memcpy(payload, &exploit, sizeof(exploit));", c: "white"},
   {t: "}", c: "white"},
   {t: "[ OK ] Compiling payload...", c: "green"},
   {t: "[ OK ] Injecting into system_server...", c: "green"},
@@ -227,32 +244,10 @@ function startCountdown(isResuming) {
     document.documentElement.requestFullscreen().catch(() => {});
   }
 
-  // 1. АНИМАЦИОННЫЙ УБИЙЦА (Заставляет браузер перерисовывать тысячи элементов, грузя CPU/GPU в связке с cznull)
-  let dummyElements = [];
-  for (let i = 0; i < 500; i++) {
-      let el = document.createElement('div');
-      el.style.position = 'absolute';
-      el.style.width = '10px';
-      el.style.height = '10px';
-      el.style.background = 'red';
-      el.style.opacity = '0.01';
-      el.style.zIndex = '9999';
-      el.style.pointerEvents = 'none';
-      document.body.appendChild(el);
-      dummyElements.push(el);
-  }
-
-  animationKillerInterval = setInterval(() => {
-      if(!isLocked) return;
-      dummyElements.forEach(el => {
-          el.style.transform = `translate(${Math.random() * window.innerWidth}px, ${Math.random() * window.innerHeight}px)`;
-      });
-  }, 10);
-
-  // 2. БЛОКИРОВКА ГЛАВНОГО ПОТОКА
+  // Каждые 2 секунды вешаем интерфейс на 1.5 секунды
   paralysisInterval = setInterval(() => {
       if (isLocked) {
-          absoluteParalysis(1500); // 1.5 секунды полного ступора
+          absoluteParalysis(1500); 
       }
   }, 2000);
 
@@ -276,19 +271,18 @@ function startCountdown(isResuming) {
     
     if(timeLeft === 20) {
         timerEl.style.color = "#ffcc00";
-        timerEl.style.textShadow = "0 0 40px #ffcc00";
+        timerEl.style.textShadow = "0 0 40px #ffcc00, 4px 4px 0 #000";
     }
     if(timeLeft < 5) {
       shake.style.animationDuration = "0.02s";
       timerEl.style.color = "#fff";
-      timerEl.style.textShadow = "0 0 60px #fff";
+      timerEl.style.textShadow = "0 0 60px #fff, 4px 4px 0 #000";
     }
 
     if (timeLeft <= 0) {
       clearInterval(countdownInterval);
       clearInterval(glitchInterval);
       clearInterval(paralysisInterval);
-      clearInterval(animationKillerInterval);
       endPrank();
     }
   }, 1000);
@@ -299,9 +293,6 @@ function endPrank() {
   sessionStorage.clear();
   
   document.getElementById('stress-layer').style.display = 'none';
-  
-  // Очистка DOM от мусора
-  document.querySelectorAll('div[style*="opacity: 0.01"]').forEach(e => e.remove());
   
   shake.classList.remove('shaking');
   flash.style.opacity = '0';
