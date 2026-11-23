@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>СИСТЕМА</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#000; color:#0f0; overflow:hidden;
+    font-family: 'Courier New', monospace; height:100vh;
+  }
+  #terminal {
+    padding:20px; font-size:15px; line-height:1.5;
+    white-space:pre-wrap; word-break:break-all;
+  }
+  .red { color:#f00; }
+  .white { color:#fff; }
+  #flash {
+    position:fixed; inset:0; background:#f00; opacity:0;
+    pointer-events:none; z-index:99;
+  }
+  #shake { position:fixed; inset:0; }
+  @keyframes shake {
+    0%{transform:translate(0,0)} 20%{transform:translate(-8px,4px)}
+    40%{transform:translate(6px,-6px)} 60%{transform:translate(-4px,-3px)}
+    80%{transform:translate(5px,5px)} 100%{transform:translate(0,0)}
+  }
+  .shaking { animation: shake .18s infinite; }
+  #final {
+    position:fixed; inset:0; display:none; z-index:100;
+    background:#000; color:#fff; text-align:center;
+    flex-direction:column; align-items:center; justify-content:center;
+    padding:30px; font-family:sans-serif;
+  }
+  #final h1 { font-size:2.2em; color:#ffcc00; margin-bottom:16px; }
+  #final p { font-size:1.1em; color:#ccc; max-width:600px; line-height:1.6; }
+  #final .emoji { font-size:4em; margin-bottom:10px; }
+  .blink { animation: blink 1s step-start infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+</style>
+</head>
+<body>
+<div id="shake">
+  <div id="terminal"></div>
+</div>
+<div id="flash"></div>
+<div id="final">
+  <div class="emoji">😅</div>
+  <h1>ШУТКА!</h1>
+  <p>Никакого взлома нет. Это просто страница-розыгрыш.<br>
+  Расслабься, всё в порядке. Выдохни 😌</p>
+</div>
+
+<script>
+const lines = [
+  {t:"root@system:~# access --force --override", c:"white"},
+  {t:"[OK] подключение к ядру...", c:"green"},
+  {t:"[OK] обход защиты...", c:"green"},
+  {t:"ВНИМАНИЕ: несанкционированный доступ", c:"red"},
+  {t:"root@system:~# wipe --all --confirm", c:"white"},
+  {t:"УДАЛЕНИЕ СЕКТОРА 0x00A1...", c:"red"},
+  {t:"УДАЛЕНИЕ СЕКТОРА 0x00A2...", c:"red"},
+  {t:"УДАЛЕНИЕ СЕКТОРА 0x00A3...", c:"red"},
+  {t:"КРИТИЧЕСКАЯ ОШИБКА", c:"red"},
+  {t:"СИСТЕМА СКОМПРОМЕТИРОВАНА", c:"red"},
+  {t:"АХАЗАЗА. ТЕБЕ КОНЕЦ.", c:"red"},
+];
+
+const term = document.getElementById('terminal');
+const flash = document.getElementById('flash');
+const shake = document.getElementById('shake');
+const final = document.getElementById('final');
+
+let i = 0;
+
+function typeLine() {
+  if (i >= lines.length) {
+    // финальная вспышка и тряска
+    shake.classList.add('shaking');
+    let count = 0;
+    const flasher = setInterval(() => {
+      flash.style.opacity = flash.style.opacity === '1' ? '0' : '1';
+      count++;
+      if (count > 8) {
+        clearInterval(flasher);
+        flash.style.opacity = '0';
+        reveal();
+      }
+    }, 90);
+    return;
+  }
+
+  const line = lines[i];
+  const div = document.createElement('div');
+  div.className = line.c;
+  term.appendChild(div);
+
+  // эффект печати
+  let j = 0;
+  const typer = setInterval(() => {
+    div.textContent += line.t[j] || '';
+    j++;
+    if (j > line.t.length) {
+      clearInterval(typer);
+      i++;
+      setTimeout(typeLine, 120 + Math.random() * 200);
+    }
+  }, 12);
+
+  // случайные вспышки по ходу
+  if (line.c === 'red' && Math.random() > 0.5) {
+    flash.style.opacity = '0.3';
+    setTimeout(() => flash.style.opacity = '0', 60);
+  }
+}
+
+function reveal() {
+  shake.classList.remove('shaking');
+  term.style.display = 'none';
+  final.style.display = 'flex';
+}
+
+setTimeout(typeLine, 600);
+</script>
+</body>
+</html>
