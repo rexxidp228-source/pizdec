@@ -72,8 +72,8 @@
   </div>
 </div>
 
-<!-- ФОТКА УТКИ -->
-<img id="duck-face" src="https://i.imgur.com/2Y6v9uW.jpeg" alt="AI Duck">
+<!-- ФОТКА УТКИ (Встроенная в код, 100% загрузится) -->
+<img id="duck-face" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=" alt="AI Duck">
 
 <!-- BSOD -->
 <div id="final">
@@ -290,7 +290,7 @@ function endPrank() {
     }
     if (navigator.vibrate) navigator.vibrate([800, 200, 800, 200, 800]);
 
-    // 4. ЧЕРЕЗ 2 СЕКУНДЫ СМЕНЯЕМ УТКУ НА СИНИЙ ЭКРАН
+    // 4. ЧЕРЕЗ 5 СЕКУНД СМЕНЯЕМ УТКУ НА СИНИЙ ЭКРАН (увеличил время, чтобы точно увидел)
     setTimeout(() => {
         duck.style.display = 'none';
         document.getElementById('final').style.display = 'flex';
@@ -309,7 +309,7 @@ function endPrank() {
                 forceRender.style.transform = `translate(${Math.random()}px, ${Math.random()}px)`;
             }
         }, 5);
-    }, 2000); // Утка висит 2 секунды
+    }, 5000); 
 }
 </script>
 </body>
