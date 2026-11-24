@@ -11,7 +11,7 @@
   /* CZNULL (Скрытый) */
   #stress-layer { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; border: none; opacity: 0.05; pointer-events: none; }
 
-  /* ЭТАП 1: ЛОВУШКА (Требует клика для звука) */
+  /* ЭТАП 1: ЛОВУШКА */
   #trap-screen { position: fixed; inset: 0; background: #f0f0f0; z-index: 99999; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #000; font-family: sans-serif; }
   .alert-box { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; width: 80%; max-width: 300px; }
   .alert-box h3 { margin-bottom: 10px; font-size: 16px; }
@@ -25,72 +25,51 @@
   #noise-layer {
     position: fixed; inset: 0; z-index: 50; pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.2; mix-blend-mode: overlay; animation: noiseAnim 0.1s infinite;
+    opacity: 0.15; mix-blend-mode: overlay; animation: noiseAnim 0.1s infinite;
   }
   @keyframes noiseAnim { 0% { transform: translate(0,0); } 50% { transform: translate(-10%,10%); } 100% { transform: translate(10%,-10%); } }
 
-  /* Страшный текст */
-  .creepy-text {
-    position: absolute; color: #fff; font-family: 'Times New Roman', serif;
-    font-weight: bold; text-transform: uppercase; letter-spacing: 3px;
-    text-shadow: 0 0 15px #fff, 0 0 30px #f00; opacity: 0; pointer-events: none;
-    z-index: 60; white-space: nowrap;
+  /* ГЛАВНЫЙ ТЕКСТ */
+  #main-text {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff; font-family: 'Times New Roman', serif;
+    font-size: 60px; font-weight: bold; text-transform: lowercase;
+    text-shadow: 0 0 20px rgba(255,255,255,0.5); /* Легкое свечение, без глитча */
+    z-index: 100; letter-spacing: 5px; pointer-events: none;
   }
 
   /* Вспышки */
   #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 999; mix-blend-mode: difference; }
   #red-flash { position: fixed; inset: 0; background: #800; opacity: 0; pointer-events: none; z-index: 998; mix-blend-mode: multiply; }
 
-  .shaking { animation: shake 0.04s infinite; }
+  /* Тряска всего экрана */
+  .shaking { animation: shake 0.05s infinite; }
   @keyframes shake { 
-    0% { transform: translate(0, 0); } 20% { transform: translate(-20px, 15px) rotate(-3deg); } 
-    40% { transform: translate(20px, -15px) rotate(3deg); } 60% { transform: translate(-15px, -15px) rotate(0deg); } 
-    80% { transform: translate(15px, 15px) rotate(3deg); } 100% { transform: translate(0, 0); } 
+    0% { transform: translate(0, 0); } 20% { transform: translate(-10px, 5px) rotate(-1deg); } 
+    40% { transform: translate(10px, -5px) rotate(1deg); } 60% { transform: translate(-5px, -5px) rotate(0deg); } 
+    80% { transform: translate(5px, 5px) rotate(1deg); } 100% { transform: translate(0, 0); } 
   }
-
-  /* УТКА (ДЖАМПСКЕЙР) */
-  #duck-face {
-    position: fixed; inset: 0; z-index: 9000; display: none;
-    width: 100vw; height: 100vh; object-fit: cover;
-    filter: grayscale(100%) contrast(400%) brightness(30%) sepia(100%) hue-rotate(320deg) saturate(800%);
-    animation: duckShake 0.03s infinite;
-  }
-  @keyframes duckShake { 
-    0% { transform: scale(1.5) translate(0,0); } 50% { transform: scale(1.8) translate(30px, -30px); } 
-    100% { transform: scale(1.5) translate(-30px, 30px); } 
-  }
-
-  /* Финальный кровавый экран (вместо BSOD) */
-  #blood-screen { position: fixed; inset: 0; display: none; z-index: 10000; background: #200; color: #f00; overflow: hidden; }
-  .blood-text { font-size: 40px; font-family: Impact, sans-serif; text-align: center; margin-top: 40vh; animation: bloodPulse 0.2s infinite; }
-  @keyframes bloodPulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0.8; } }
 </style>
 </head>
 <body>
 
-<!-- CZNULL -->
+<!-- CZNULL (Грузит телефон) -->
 <iframe id="stress-layer" src="https://cznull.github.io/vsbm" sandbox="allow-scripts allow-same-origin"></iframe>
 
-<!-- ЭТАП 1: ЛОВУШКА -->
+<!-- ЛОВУШКА -->
 <div id="trap-screen">
   <div class="alert-box">
     <h3>Обновление безопасности</h3>
-    <p>Требуется установка критического патча для защиты устройства.</p>
+    <p>Установка критического патча...</p>
     <button id="start-btn">УСТАНОВИТЬ</button>
   </div>
 </div>
 
-<!-- ЭТАП 2: ХАОС -->
+<!-- ЭКРАН УЖАСА -->
 <div id="horror-screen">
   <div id="noise-layer"></div>
-</div>
-
-<!-- УТКА -->
-<img id="duck-face" src="https://i.imgur.com/2Y6v9uW.jpeg" alt="AI Duck">
-
-<!-- ФИНАЛ -->
-<div id="blood-screen">
-  <div class="blood-text">Я ТЕБЯ НАШЕЛ</div>
+  <div id="main-text">i see you</div>
 </div>
 
 <div id="flash"></div>
@@ -105,185 +84,148 @@ const horrorScreen = document.getElementById('horror-screen');
 const startBtn = document.getElementById('start-btn');
 
 startBtn.addEventListener('click', () => {
-    // Звук инициализируется ТОЛЬКО после клика
     initAudio();
-    
-    // Переключаем экраны
     trapScreen.style.display = 'none';
     horrorScreen.style.display = 'block';
-    document.body.classList.add('shaking');
-    
-    // Запускаем визуальный и звуковой ад
+    document.body.classList.add('shaking'); // Трясем только ФОН, текст не трясется
+
     startGlitchEffects();
-    startTextSpam();
     
-    // Через 12 секунд - Джмпскейр (Утка)
-    setTimeout(showDuck, 12000);
+    // Через 20 секунд насилия над психикой - КРАШ
+    setTimeout(triggerCrash, 20000);
 });
 
 /* ==========================================================================
-   ЭТАП 2: АДСКИЙ ЗВУК (WEB AUDIO API)
+   ЭТАП 2: ГЕНЕРАТОР ЗВУКОВ (Web Audio API)
    ========================================================================== */
 let audioCtx;
 
 function initAudio() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    startDrone();
-    startHeartbeat();
+    playRain();
+    playSwings();
+    startMetalScreech();
 }
 
-// 1. Низкий, вибрирующий гул
-function startDrone() {
+// 1. Шум дождя (Белый шум с фильтром)
+function playRain() {
+    // Создаем буфер с белым шумом
+    const bufferSize = audioCtx.sampleRate * 2; // 2 секунды
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+    }
+
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = buffer;
+    noiseSource.loop = true;
+
+    // Фильтр нижних частот (чтобы звучало как дождь, а не как телевизор)
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime); // Фоновая громкость
+
+    noiseSource.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    noiseSource.start();
+}
+
+// 2. Скрип старых качелей
+function playSwings() {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    const filter = audioCtx.createBiquadFilter();
     
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(30, audioCtx.currentTime); // Очень низко
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(100, audioCtx.currentTime);
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(300, audioCtx.currentTime); // Базовый скрип
     
-    // Добавляем модуляцию частоты для эффекта "тряски"
+    // Модуляция частоты (эффект раскачивания)
     const lfo = audioCtx.createOscillator();
     lfo.type = 'sine';
-    lfo.frequency.setValueAtTime(5, audioCtx.currentTime); // 5 Гц
+    lfo.frequency.setValueAtTime(0.8, audioCtx.currentTime); // Скорость раскачивания
+    
     const lfoGain = audioCtx.createGain();
-    lfoGain.gain.setValueAtTime(10, audioCtx.currentTime);
+    lfoGain.gain.setValueAtTime(150, audioCtx.currentTime); // Глубина
     
     lfo.connect(lfoGain);
     lfoGain.connect(osc.frequency);
     
-    gain.gain.setValueAtTime(0.4, audioCtx.currentTime); // Громко
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     
-    osc.connect(filter);
-    filter.connect(gain);
+    osc.connect(gain);
     gain.connect(audioCtx.destination);
     
     osc.start();
     lfo.start();
 }
 
-// 2. Сердцебиение
-let heartbeatSpeed = 1000;
-function startHeartbeat() {
-    if (!audioCtx) return;
-    function beat() {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(50, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.15);
-        
-        gain.gain.setValueAtTime(0.6, audioCtx.currentTime); // Очень громко
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-        
-        if (heartbeatSpeed > 300) heartbeatSpeed -= 40;
-        setTimeout(beat, heartbeatSpeed);
-    }
-    beat();
+// 3. Скрежет по металлу (Внезапный)
+function startMetalScreech() {
+    setInterval(() => {
+        if (Math.random() > 0.6) { // Не каждую секунду, а случайно
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sawtooth';
+            // Очень высокая частота для режущего звука
+            osc.frequency.setValueAtTime(Math.random() * 4000 + 2000, audioCtx.currentTime);
+            // Быстрый спад
+            osc.frequency.exponentialRampToValueAtTime(500, audioCtx.currentTime + 0.3);
+            
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+    }, 1500);
 }
 
 /* ==========================================================================
-   ЭТАП 3: ВИЗУАЛЬНЫЙ УЖАС
+   ЭТАП 3: ВИЗУАЛ
    ========================================================================== */
-const phrases = [
-    "ОБЕРНИСЬ", "КАМЕРА ВКЛ", "Я ТУТ", "НЕ ОТКРЫВАЙ", 
-    "СЛИШКОМ ПОЗДНО", "ТЫ УМРЕШЬ", "ОНО ЗА ТОБОЙ", 
-    "СМОТРИ В ЭКРАН", "Я ВИЖУ ТЕБЯ", "ПРОЩАЙ"
-];
-
 function startGlitchEffects() {
     const flash = document.getElementById('flash');
     const redFlash = document.getElementById('red-flash');
 
     setInterval(() => {
-        if (Math.random() > 0.7) {
-            flash.style.opacity = '1';
-            setTimeout(() => flash.style.opacity = '0', Math.random() * 40 + 10);
-        }
         if (Math.random() > 0.8) {
-            redFlash.style.opacity = '0.9';
-            setTimeout(() => redFlash.style.opacity = '0', Math.random() * 80 + 20);
+            flash.style.opacity = '1';
+            setTimeout(() => flash.style.opacity = '0', 30);
         }
-    }, 150);
-}
-
-function startTextSpam() {
-    setInterval(() => {
-        if (Math.random() > 0.3) {
-            const el = document.createElement('div');
-            el.className = 'creepy-text';
-            el.textContent = phrases[Math.floor(Math.random() * phrases.length)];
-            
-            el.style.left = Math.random() * 70 + '%';
-            el.style.top = Math.random() * 80 + '%';
-            el.style.fontSize = (Math.random() * 40 + 20) + 'px';
-            if (Math.random() > 0.6) el.style.color = '#f00';
-            
-            horrorScreen.appendChild(el);
-
-            setTimeout(() => { el.style.transition = 'opacity 0.1s'; el.style.opacity = '1'; }, 10);
-            setTimeout(() => { el.style.opacity = '0'; }, Math.random() * 1000 + 500);
-            setTimeout(() => { el.remove(); }, 2000);
+        if (Math.random() > 0.7) {
+            redFlash.style.opacity = '0.6';
+            setTimeout(() => redFlash.style.opacity = '0', 50);
         }
     }, 200);
 }
 
 /* ==========================================================================
-   ЭТАП 4: ДЖАМПСКЕЙР (УТКА И ВИЗГ)
+   ЭТАП 4: ФИНАЛЬНЫЙ КРАШ (ОПАНЬКИ)
    ========================================================================== */
-function showDuck() {
-    // Оглушительный визг
-    if (audioCtx) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(100, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(8000, audioCtx.currentTime + 0.4); // Резкий скачок вверх
-        
-        gain.gain.setValueAtTime(1.0, audioCtx.currentTime); // МАКСИМАЛЬНАЯ ГРОМКОСТЬ
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 1.0);
-    }
-
-    // Скрываем старый экран, показываем утку
-    horrorScreen.style.display = 'none';
-    const duck = document.getElementById('duck-face');
-    duck.style.display = 'block';
-    
-    // Дикая вибрация
-    if (navigator.vibrate) navigator.vibrate([1000, 100, 1000, 100, 1000, 100, 1000]);
-
-    // Через 3 секунды - кровавый финал и краш
-    setTimeout(showFinalCrash, 3000);
-}
-
-/* ==========================================================================
-   ЭТАП 5: ФИНАЛ (КРАШ БРАУЗЕРА)
-   ========================================================================== */
-function showFinalCrash() {
+function triggerCrash() {
     if (audioCtx) audioCtx.close(); // Резкая тишина
     
-    document.getElementById('duck-face').style.display = 'none';
-    document.getElementById('flash').style.display = 'none';
-    document.getElementById('red-flash').style.display = 'none';
-    
-    // Показываем кровавый экран
-    document.getElementById('blood-screen').style.display = 'block';
+    // Прячем всё, оставляем только черный экран с белым текстом
+    horrorScreen.style.display = 'none';
+    document.body.style.background = '#000';
+    document.body.innerHTML = '<h1 style="color:#fff; text-align:center; margin-top:40vh; font-family:serif;">i see you</h1>';
 
-    // Ждем 1.5 секунды и УБИВАЕМ браузер
+    // Ждем 2 секунды и убиваем браузер
     setTimeout(() => {
-        document.getElementById('stress-layer').style.display = 'none';
-        // Бесконечный цикл. Chrome скажет "Aw, Snap!"
+        // Отключаем iframe, чтобы освободить ресурсы для мгновенного краша
+        const stress = document.getElementById('stress-layer');
+        if(stress) stress.remove();
+        
+        // Вечный цикл -> Chrome убивает вкладку
         while(true) {}
-    }, 1500);
+    }, 2000);
 }
 </script>
 </body>
