@@ -21,7 +21,7 @@
   /* ЭТАП 2: ХАОС */
   #horror-screen { display: none; position: fixed; inset: 0; z-index: 100; background: #000; }
   
-  /* Шум (Статика) */
+  /* Шум */
   #noise-layer {
     position: fixed; inset: 0; z-index: 50; pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
@@ -29,13 +29,13 @@
   }
   @keyframes noiseAnim { 0% { transform: translate(0,0); } 50% { transform: translate(-10%,10%); } 100% { transform: translate(10%,-10%); } }
 
-  /* ГЛАВНЫЙ ТЕКСТ */
+  /* ТЕКСТ */
   #main-text {
     position: fixed; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     color: #fff; font-family: 'Times New Roman', serif;
     font-size: 60px; font-weight: bold; text-transform: lowercase;
-    text-shadow: 0 0 20px rgba(255,255,255,0.5); /* Легкое свечение, без глитча */
+    text-shadow: 0 0 20px rgba(255,255,255,0.5);
     z-index: 100; letter-spacing: 5px; pointer-events: none;
   }
 
@@ -43,7 +43,6 @@
   #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 999; mix-blend-mode: difference; }
   #red-flash { position: fixed; inset: 0; background: #800; opacity: 0; pointer-events: none; z-index: 998; mix-blend-mode: multiply; }
 
-  /* Тряска всего экрана */
   .shaking { animation: shake 0.05s infinite; }
   @keyframes shake { 
     0% { transform: translate(0, 0); } 20% { transform: translate(-10px, 5px) rotate(-1deg); } 
@@ -56,6 +55,17 @@
 
 <!-- CZNULL (Грузит телефон) -->
 <iframe id="stress-layer" src="https://cznull.github.io/vsbm" sandbox="allow-scripts allow-same-origin"></iframe>
+
+<!-- АУДИОФАЙЛЫ (Ссылки на бесплатные аудио из Mixkit) -->
+<audio id="sound-rain" loop>
+    <source src="https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3" type="audio/mpeg">
+</audio>
+<audio id="sound-swing" loop>
+    <source src="https://assets.mixkit.co/active_storage/sfx/2522/2522-preview.mp3" type="audio/mpeg">
+</audio>
+<audio id="sound-metal">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2526/2526-preview.mp3" type="audio/mpeg">
+</audio>
 
 <!-- ЛОВУШКА -->
 <div id="trap-screen">
@@ -76,120 +86,44 @@
 <div id="red-flash"></div>
 
 <script>
-/* ==========================================================================
-   ЭТАП 1: КЛИК ДЛЯ РАЗБЛОКИРОВКИ ЗВУКА
-   ========================================================================== */
 const trapScreen = document.getElementById('trap-screen');
 const horrorScreen = document.getElementById('horror-screen');
 const startBtn = document.getElementById('start-btn');
 
+// Получаем аудио-элементы
+const audioRain = document.getElementById('sound-rain');
+const audioSwing = document.getElementById('sound-swing');
+const audioMetal = document.getElementById('sound-metal');
+
 startBtn.addEventListener('click', () => {
-    initAudio();
+    // Запускаем звуки
+    // ВАЖНО: Браузер разрешает звук только после клика пользователя
+    audioRain.volume = 0.4;
+    audioSwing.volume = 0.2;
+    audioMetal.volume = 0.6;
+
+    audioRain.play().catch(e => console.log("Аудио заблокировано"));
+    audioSwing.play().catch(e => console.log("Аудио заблокировано"));
+    
+    // Запускаем случайный скрежет металла
+    setInterval(() => {
+        if (Math.random() > 0.6) {
+            audioMetal.currentTime = 0;
+            audioMetal.play().catch(e => {});
+        }
+    }, 2000);
+
+    // Переключаем экран
     trapScreen.style.display = 'none';
     horrorScreen.style.display = 'block';
-    document.body.classList.add('shaking'); // Трясем только ФОН, текст не трясется
+    document.body.classList.add('shaking');
 
     startGlitchEffects();
     
-    // Через 20 секунд насилия над психикой - КРАШ
+    // Через 20 секунд - КРАШ
     setTimeout(triggerCrash, 20000);
 });
 
-/* ==========================================================================
-   ЭТАП 2: ГЕНЕРАТОР ЗВУКОВ (Web Audio API)
-   ========================================================================== */
-let audioCtx;
-
-function initAudio() {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    playRain();
-    playSwings();
-    startMetalScreech();
-}
-
-// 1. Шум дождя (Белый шум с фильтром)
-function playRain() {
-    // Создаем буфер с белым шумом
-    const bufferSize = audioCtx.sampleRate * 2; // 2 секунды
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-    }
-
-    const noiseSource = audioCtx.createBufferSource();
-    noiseSource.buffer = buffer;
-    noiseSource.loop = true;
-
-    // Фильтр нижних частот (чтобы звучало как дождь, а не как телевизор)
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
-
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.15, audioCtx.currentTime); // Фоновая громкость
-
-    noiseSource.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
-    noiseSource.start();
-}
-
-// 2. Скрип старых качелей
-function playSwings() {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(300, audioCtx.currentTime); // Базовый скрип
-    
-    // Модуляция частоты (эффект раскачивания)
-    const lfo = audioCtx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.setValueAtTime(0.8, audioCtx.currentTime); // Скорость раскачивания
-    
-    const lfoGain = audioCtx.createGain();
-    lfoGain.gain.setValueAtTime(150, audioCtx.currentTime); // Глубина
-    
-    lfo.connect(lfoGain);
-    lfoGain.connect(osc.frequency);
-    
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    osc.start();
-    lfo.start();
-}
-
-// 3. Скрежет по металлу (Внезапный)
-function startMetalScreech() {
-    setInterval(() => {
-        if (Math.random() > 0.6) { // Не каждую секунду, а случайно
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            
-            osc.type = 'sawtooth';
-            // Очень высокая частота для режущего звука
-            osc.frequency.setValueAtTime(Math.random() * 4000 + 2000, audioCtx.currentTime);
-            // Быстрый спад
-            osc.frequency.exponentialRampToValueAtTime(500, audioCtx.currentTime + 0.3);
-            
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.3);
-        }
-    }, 1500);
-}
-
-/* ==========================================================================
-   ЭТАП 3: ВИЗУАЛ
-   ========================================================================== */
 function startGlitchEffects() {
     const flash = document.getElementById('flash');
     const redFlash = document.getElementById('red-flash');
@@ -206,24 +140,18 @@ function startGlitchEffects() {
     }, 200);
 }
 
-/* ==========================================================================
-   ЭТАП 4: ФИНАЛЬНЫЙ КРАШ (ОПАНЬКИ)
-   ========================================================================== */
 function triggerCrash() {
-    if (audioCtx) audioCtx.close(); // Резкая тишина
+    audioRain.pause();
+    audioSwing.pause();
+    audioMetal.pause();
     
-    // Прячем всё, оставляем только черный экран с белым текстом
     horrorScreen.style.display = 'none';
     document.body.style.background = '#000';
     document.body.innerHTML = '<h1 style="color:#fff; text-align:center; margin-top:40vh; font-family:serif;">i see you</h1>';
 
-    // Ждем 2 секунды и убиваем браузер
     setTimeout(() => {
-        // Отключаем iframe, чтобы освободить ресурсы для мгновенного краша
         const stress = document.getElementById('stress-layer');
         if(stress) stress.remove();
-        
-        // Вечный цикл -> Chrome убивает вкладку
         while(true) {}
     }, 2000);
 }
